@@ -64,9 +64,11 @@ const seededLeaderboard = [
   { nickname: "角度大师", distance: 101.2, paper: "普通打印纸", createdAt: "2026-03-31 11:55", source: "seed" },
 ];
 
-const DISTANCE_SCALE = 10.6;
+const DISTANCE_SCALE = 34;
+const HEIGHT_SCALE = 40;
+const SIMULATION_SPEED = 0.42;
 const LAUNCH_X = 42;
-const WORLD_WIDTH = 2600;
+const WORLD_WIDTH = 4200;
 
 const state = {
   selectedPaperId: "default",
@@ -385,13 +387,13 @@ function onLaunchStart(event) {
 function onLaunchMove(event) {
   if (!state.throwState.active) return;
   const rect = refs.launchPad.getBoundingClientRect();
-  const localX = clamp(event.clientX - rect.left, 18, rect.width - 18);
+  const localX = clamp(event.clientX - rect.left, state.throwState.originX, rect.width - 18);
   const localY = clamp(event.clientY - rect.top, 18, rect.height - 18);
-  const dx = Math.max(24, localX - state.throwState.originX);
+  const dx = Math.max(0.001, localX - state.throwState.originX);
   const dy = Math.max(8, state.throwState.originY - localY);
   state.throwState.aimX = localX;
   state.throwState.aimY = localY;
-  state.throwState.angle = clamp((Math.atan2(dy, dx) * 180) / Math.PI, 10, 60);
+  state.throwState.angle = clamp((Math.atan2(dy, dx) * 180) / Math.PI, 10, 90);
   updateAimVisual();
   refs.angleReadout.textContent = `${Math.round(state.throwState.angle)}°`;
 }
@@ -492,7 +494,7 @@ function startSimulation() {
   const angleRad = (state.throwState.angle * Math.PI) / 180;
   const releaseFactor = state.throwState.releaseScore / 100;
 
-  const baseSpeed = 18 + stats.speed * 0.22 + powerFactor * 14;
+  const baseSpeed = 11 + stats.speed * 0.13 + powerFactor * 7.4;
   const launchStability = clamp((stats.stability * 0.7 + state.throwState.releaseScore * 0.55) / 125, 0.18, 1.08);
   const liftFactor = stats.lift / 100;
   const dragFactor = stats.drag / 100;
@@ -533,26 +535,26 @@ function startSimulation() {
     const gravity = 18 + weightFactor * 12 + riskFactor * 4;
     const drag = 0.3 + dragFactor * 0.6;
 
-    jet.vx += (0.15 - drag * jet.vx * 0.012 - Math.max(0, riskFactor - 0.62) * 0.12) * deltaSeconds * 60;
-    jet.vy += (gravity - liftBoost - gust * 10) * deltaSeconds;
-    jet.vx += turbulence * deltaSeconds * 26;
-    jet.vy += (Math.max(0, riskFactor - 0.58) * 18 - symmetryBias * 4) * deltaSeconds;
+    jet.vx += (0.15 - drag * jet.vx * 0.012 - Math.max(0, riskFactor - 0.62) * 0.12) * deltaSeconds * 60 * SIMULATION_SPEED;
+    jet.vy += (gravity - liftBoost - gust * 10) * deltaSeconds * SIMULATION_SPEED;
+    jet.vx += turbulence * deltaSeconds * 26 * SIMULATION_SPEED;
+    jet.vy += (Math.max(0, riskFactor - 0.58) * 18 - symmetryBias * 4) * deltaSeconds * SIMULATION_SPEED;
 
     if (elapsed > 0.6 && tailBias > 0.68) {
-      jet.vy += (tailBias - 0.68) * 36 * deltaSeconds;
+      jet.vy += (tailBias - 0.68) * 36 * deltaSeconds * SIMULATION_SPEED;
     }
 
     if (elapsed < 0.65 && noseBias > 0.72) {
-      jet.vy += noseBias * 14 * deltaSeconds;
+      jet.vy += noseBias * 14 * deltaSeconds * SIMULATION_SPEED;
     }
 
-    jet.x += jet.vx;
-    jet.y += jet.vy;
+    jet.x += jet.vx * SIMULATION_SPEED;
+    jet.y += jet.vy * SIMULATION_SPEED;
     jet.rotation = clamp(jet.rotation + (jet.vy * 0.06 + turbulence * 14), -48, 72);
     state.sim.points.push({ x: jet.x, y: jet.y });
 
     const distance = Math.max(0, (jet.x - LAUNCH_X) / DISTANCE_SCALE);
-    const height = Math.max(0, (refs.canvas.height - 116 - jet.y) / 9.8);
+    const height = Math.max(0, (refs.canvas.height - 116 - jet.y) / HEIGHT_SCALE);
     state.sim.maxDistance = Math.max(state.sim.maxDistance, distance);
     state.sim.maxHeight = Math.max(state.sim.maxHeight, height);
     state.sim.windText = getWindText(Math.abs(gust));

@@ -265,6 +265,27 @@ input {
   background: linear-gradient(180deg, #fdfefe 0%, #f2f7fb 100%);
 }
 
+.builder-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.builder-controls {
+  min-width: 0;
+}
+
+.builder-controls .field-block:first-child {
+  margin-top: 0;
+}
+
+.builder-visual {
+  min-width: 0;
+  position: sticky;
+  top: 18px;
+}
+
 .airframe-preview {
   min-height: 220px;
   display: grid;
@@ -926,6 +947,14 @@ input {
   .game-layout,
   .game-topbar {
     grid-template-columns: 1fr;
+  }
+
+  .builder-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .builder-visual {
+    position: static;
   }
 
   .game-topbar {

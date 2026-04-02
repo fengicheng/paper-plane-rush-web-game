@@ -77,13 +77,15 @@ try {
   await page.mouse.move(box.x + box.width / 2, box.y + box.height - 28);
   await page.mouse.down();
   await page.waitForTimeout(620);
-  await page.mouse.move(box.x + box.width / 2, box.y + 42, { steps: 12 });
+  await page.mouse.move(box.x + box.width / 2, box.y + 42, { steps: 10 });
+  const maxAngleText = await page.locator("#angleReadout").textContent();
+  await page.mouse.move(box.x + box.width * 0.72, box.y + 60, { steps: 10 });
   const angleText = await page.locator("#angleReadout").textContent();
   await page.mouse.up();
   await page.waitForFunction(() => {
     const text = document.querySelector("#resultDistance")?.textContent ?? "";
     return text !== "0.0 m";
-  }, null, { timeout: 20000 });
+  }, null, { timeout: 25000 });
 
   const resultDistanceText = await page.locator("#resultDistance").textContent();
   const resultDistance = Number.parseFloat(resultDistanceText ?? "0");
@@ -96,6 +98,10 @@ try {
     throw new Error(`Expected throw angle to change during drag, got "${angleText}"`);
   }
 
+  if (!maxAngleText || Number.parseFloat(maxAngleText) < 89) {
+    throw new Error(`Expected throw angle to reach near 90 degrees, got "${maxAngleText}"`);
+  }
+
   if (pageErrors.length > 0) {
     throw new Error(`Page errors: ${pageErrors.join(" | ")}`);
   }
@@ -106,6 +112,7 @@ try {
         url,
         paperCount,
         sliderCount,
+        maxAngleText,
         angleText,
         resultDistance,
       },

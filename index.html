@@ -76,70 +76,76 @@
               <h2>构筑你的机型</h2>
             </div>
 
-            <div class="airframe-card">
-              <div class="airframe-preview">
-                <div id="planePreview" class="plane-preview">
-                  <div class="plane-body"></div>
-                  <div class="plane-wing left"></div>
-                  <div class="plane-wing right"></div>
-                  <div class="plane-tail"></div>
+            <div class="builder-layout">
+              <div class="builder-controls">
+                <div class="field-block compact">
+                  <label for="nicknameInput">玩家昵称</label>
+                  <input id="nicknameInput" type="text" maxlength="12" placeholder="输入昵称上榜" />
                 </div>
-              </div>
-              <div class="airframe-readout">
-                <div class="mini-label">飞行预估</div>
-                <div id="statBars" class="stat-bars"></div>
-              </div>
-            </div>
 
-            <div class="field-block compact">
-              <label for="nicknameInput">玩家昵称</label>
-              <input id="nicknameInput" type="text" maxlength="12" placeholder="输入昵称上榜" />
-            </div>
+                <div class="field-block">
+                  <div class="field-head">
+                    <label>纸张选择</label>
+                    <span>决定飞机底板</span>
+                  </div>
+                  <div id="paperOptions" class="paper-grid"></div>
+                </div>
 
-            <div class="field-block">
-              <div class="field-head">
-                <label>纸张选择</label>
-                <span>决定飞机底板</span>
-              </div>
-              <div id="paperOptions" class="paper-grid"></div>
-            </div>
+                <div class="field-block">
+                  <div class="field-head">
+                    <label>折纸参数</label>
+                    <span>所有修改会立刻反映到预估和机身外观上</span>
+                  </div>
+                  <div id="parameterControls" class="slider-group"></div>
+                </div>
 
-            <div class="field-block">
-              <div class="field-head">
-                <label>折纸参数</label>
-                <span>所有修改会立刻反映到预估和机身外观上</span>
-              </div>
-              <div id="parameterControls" class="slider-group"></div>
-            </div>
-
-            <div class="field-block">
-              <div class="fold-steps">
-                <div class="fold-step active">
-                  <span>1</span>
-                  <div>
-                    <strong>对折</strong>
-                    <p>决定基础骨架与对称性</p>
+                <div class="field-block">
+                  <div class="fold-steps">
+                    <div class="fold-step active">
+                      <span>1</span>
+                      <div>
+                        <strong>对折</strong>
+                        <p>决定基础骨架与对称性</p>
+                      </div>
+                    </div>
+                    <div class="fold-step">
+                      <span>2</span>
+                      <div>
+                        <strong>折机头</strong>
+                        <p>尖锐更快，但也更难压住</p>
+                      </div>
+                    </div>
+                    <div class="fold-step">
+                      <span>3</span>
+                      <div>
+                        <strong>折机翼</strong>
+                        <p>更宽更能飘，也更容易吃风</p>
+                      </div>
+                    </div>
+                    <div class="fold-step">
+                      <span>4</span>
+                      <div>
+                        <strong>调尾翼</strong>
+                        <p>决定抬头滑翔还是提前下坠</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div class="fold-step">
-                  <span>2</span>
-                  <div>
-                    <strong>折机头</strong>
-                    <p>尖锐更快，但也更难压住</p>
+              </div>
+
+              <div class="builder-visual">
+                <div class="airframe-card">
+                  <div class="airframe-preview">
+                    <div id="planePreview" class="plane-preview">
+                      <div class="plane-body"></div>
+                      <div class="plane-wing left"></div>
+                      <div class="plane-wing right"></div>
+                      <div class="plane-tail"></div>
+                    </div>
                   </div>
-                </div>
-                <div class="fold-step">
-                  <span>3</span>
-                  <div>
-                    <strong>折机翼</strong>
-                    <p>更宽更能飘，也更容易吃风</p>
-                  </div>
-                </div>
-                <div class="fold-step">
-                  <span>4</span>
-                  <div>
-                    <strong>调尾翼</strong>
-                    <p>决定抬头滑翔还是提前下坠</p>
+                  <div class="airframe-readout">
+                    <div class="mini-label">飞行预估</div>
+                    <div id="statBars" class="stat-bars"></div>
                   </div>
                 </div>
               </div>
