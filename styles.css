@@ -200,9 +200,21 @@ input {
   line-height: 1.1;
 }
 
-.game-layout {
+.page-stack {
   display: grid;
-  grid-template-columns: 380px minmax(0, 1fr) 320px;
+}
+
+.workspace {
+  animation: fade-in 220ms ease;
+}
+
+.builder-page .controls-panel {
+  padding: 20px;
+}
+
+.launch-page {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 320px;
   gap: 18px;
   align-items: start;
 }
@@ -217,6 +229,10 @@ input {
 }
 
 .arena-panel {
+  padding: 16px;
+}
+
+.inner-panel {
   padding: 16px;
 }
 
@@ -284,6 +300,14 @@ input {
   min-width: 0;
   position: sticky;
   top: 18px;
+}
+
+.builder-visual-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
 }
 
 .airframe-preview {
@@ -561,6 +585,53 @@ input {
   border-radius: 24px;
   border: 1px solid rgba(23, 88, 214, 0.18);
   background: linear-gradient(180deg, #16304d 0%, #20436a 100%);
+}
+
+.launch-sidebar {
+  padding: 20px;
+}
+
+.nav-btn {
+  width: 100%;
+}
+
+.launch-sidebar-copy {
+  margin: 16px 0;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel-soft);
+}
+
+.launch-sidebar-copy p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.launch-build-summary {
+  display: grid;
+  gap: 10px;
+}
+
+.summary-chip {
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: white;
+}
+
+.summary-chip span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.summary-chip strong {
+  display: block;
+  font-size: 18px;
+  line-height: 1.4;
 }
 
 #flightCanvas {
@@ -933,8 +1004,8 @@ input {
 }
 
 @media (max-width: 1400px) {
-  .game-layout {
-    grid-template-columns: 340px minmax(0, 1fr);
+  .launch-page {
+    grid-template-columns: 240px minmax(0, 1fr);
   }
 
   .board-panel {
@@ -944,7 +1015,7 @@ input {
 
 @media (max-width: 1180px) {
   .landing-grid,
-  .game-layout,
+  .launch-page,
   .game-topbar {
     grid-template-columns: 1fr;
   }
@@ -981,6 +1052,11 @@ input {
 
   .flight-stage {
     min-height: 980px;
+  }
+
+  .builder-visual-head {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .stage-launch,

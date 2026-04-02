@@ -69,178 +69,198 @@
           </div>
         </header>
 
-        <main class="game-layout">
-          <aside class="panel controls-panel">
-            <div class="panel-head">
-              <span class="step-tag">折纸工作台</span>
-              <h2>构筑你的机型</h2>
-            </div>
+        <main class="page-stack">
+          <section id="builderPage" class="workspace builder-page">
+            <section class="panel controls-panel">
+              <div class="panel-head">
+                <span class="step-tag">折纸页</span>
+                <h2>构筑你的机型</h2>
+              </div>
 
-            <div class="builder-layout">
-              <div class="builder-controls">
-                <div class="field-block compact">
-                  <label for="nicknameInput">玩家昵称</label>
-                  <input id="nicknameInput" type="text" maxlength="12" placeholder="输入昵称上榜" />
-                </div>
-
-                <div class="field-block">
-                  <div class="field-head">
-                    <label>纸张选择</label>
-                    <span>决定飞机底板</span>
+              <div class="builder-layout">
+                <div class="builder-controls">
+                  <div class="field-block compact">
+                    <label for="nicknameInput">玩家昵称</label>
+                    <input id="nicknameInput" type="text" maxlength="12" placeholder="输入昵称上榜" />
                   </div>
-                  <div id="paperOptions" class="paper-grid"></div>
-                </div>
 
-                <div class="field-block">
-                  <div class="field-head">
-                    <label>折纸参数</label>
-                    <span>所有修改会立刻反映到预估和机身外观上</span>
+                  <div class="field-block">
+                    <div class="field-head">
+                      <label>纸张选择</label>
+                      <span>决定飞机底板</span>
+                    </div>
+                    <div id="paperOptions" class="paper-grid"></div>
                   </div>
-                  <div id="parameterControls" class="slider-group"></div>
-                </div>
 
-                <div class="field-block">
-                  <div class="fold-steps">
-                    <div class="fold-step active">
-                      <span>1</span>
-                      <div>
-                        <strong>对折</strong>
-                        <p>决定基础骨架与对称性</p>
+                  <div class="field-block">
+                    <div class="field-head">
+                      <label>折纸参数</label>
+                      <span>所有修改会立刻反映到预估和机身外观上</span>
+                    </div>
+                    <div id="parameterControls" class="slider-group"></div>
+                  </div>
+
+                  <div class="field-block">
+                    <div class="fold-steps">
+                      <div class="fold-step active">
+                        <span>1</span>
+                        <div>
+                          <strong>对折</strong>
+                          <p>决定基础骨架与对称性</p>
+                        </div>
+                      </div>
+                      <div class="fold-step">
+                        <span>2</span>
+                        <div>
+                          <strong>折机头</strong>
+                          <p>尖锐更快，但也更难压住</p>
+                        </div>
+                      </div>
+                      <div class="fold-step">
+                        <span>3</span>
+                        <div>
+                          <strong>折机翼</strong>
+                          <p>更宽更能飘，也更容易吃风</p>
+                        </div>
+                      </div>
+                      <div class="fold-step">
+                        <span>4</span>
+                        <div>
+                          <strong>调尾翼</strong>
+                          <p>决定抬头滑翔还是提前下坠</p>
+                        </div>
                       </div>
                     </div>
-                    <div class="fold-step">
-                      <span>2</span>
-                      <div>
-                        <strong>折机头</strong>
-                        <p>尖锐更快，但也更难压住</p>
+                  </div>
+                </div>
+
+                <aside class="builder-visual panel inner-panel">
+                  <div class="builder-visual-head">
+                    <span class="step-tag cool">机型概览</span>
+                    <button id="goLaunchBtn" class="primary-btn" type="button">前往放飞页</button>
+                  </div>
+                  <div class="airframe-card">
+                    <div class="airframe-preview">
+                      <div id="planePreview" class="plane-preview">
+                        <div class="plane-body"></div>
+                        <div class="plane-wing left"></div>
+                        <div class="plane-wing right"></div>
+                        <div class="plane-tail"></div>
                       </div>
                     </div>
-                    <div class="fold-step">
-                      <span>3</span>
-                      <div>
-                        <strong>折机翼</strong>
-                        <p>更宽更能飘，也更容易吃风</p>
-                      </div>
-                    </div>
-                    <div class="fold-step">
-                      <span>4</span>
-                      <div>
-                        <strong>调尾翼</strong>
-                        <p>决定抬头滑翔还是提前下坠</p>
-                      </div>
+                    <div class="airframe-readout">
+                      <div class="mini-label">飞行预估</div>
+                      <div id="statBars" class="stat-bars"></div>
                     </div>
                   </div>
-                </div>
+                </aside>
               </div>
-
-              <div class="builder-visual">
-                <div class="airframe-card">
-                  <div class="airframe-preview">
-                    <div id="planePreview" class="plane-preview">
-                      <div class="plane-body"></div>
-                      <div class="plane-wing left"></div>
-                      <div class="plane-wing right"></div>
-                      <div class="plane-tail"></div>
-                    </div>
-                  </div>
-                  <div class="airframe-readout">
-                    <div class="mini-label">飞行预估</div>
-                    <div id="statBars" class="stat-bars"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          <section class="panel arena-panel">
-            <div class="panel-head arena-head">
-              <span class="step-tag cool">飞行演算区</span>
-              <h2>蓄力、瞄准、发射</h2>
-            </div>
-
-            <div class="flight-stage">
-              <canvas id="flightCanvas" width="1600" height="920"></canvas>
-
-              <div class="stage-topline">
-                <div class="run-metrics">
-                  <div>
-                    <span>当前距离</span>
-                    <strong id="liveDistance">0.0 m</strong>
-                  </div>
-                  <div>
-                    <span>当前高度</span>
-                    <strong id="liveHeight">0.0 m</strong>
-                  </div>
-                  <div>
-                    <span>风扰动</span>
-                    <strong id="windReadout">平稳</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div id="introOverlay" class="intro-overlay">
-                <p class="intro-title">准备首飞</p>
-                <p>按住左下角发射台蓄力，向右上拖动决定角度，在高亮释放区松手更稳。</p>
-              </div>
-
-              <div class="stage-launch">
-                <div class="launch-title">
-                  <h3>发射台</h3>
-                  <span id="throwHint">按住开始蓄力，拖出一条向右上方的发射轨迹</span>
-                </div>
-                <div id="launchPad" class="launch-pad">
-                  <div class="drag-guide"></div>
-                  <div class="drag-arrow"></div>
-                  <div class="pad-center">按住并拖拽瞄准</div>
-                  <div id="aimLine" class="aim-line"></div>
-                  <div id="aimTip" class="aim-tip"></div>
-                </div>
-                <div class="throw-readout">
-                  <div>
-                    <span>力度</span>
-                    <strong id="powerReadout">0%</strong>
-                  </div>
-                  <div>
-                    <span>角度</span>
-                    <strong id="angleReadout">28°</strong>
-                  </div>
-                  <div>
-                    <span>释放稳定</span>
-                    <strong id="releaseReadout">未释放</strong>
-                  </div>
-                </div>
-                <div class="power-meter-shell">
-                  <div class="sweet-spot"></div>
-                  <div id="powerMeter" class="power-meter"></div>
-                </div>
-              </div>
-
-              <div class="stage-result">
-                <div class="result-main">
-                  <strong id="resultDistance">0.0 m</strong>
-                  <p id="resultSummary">调好参数后发射，看看这架纸飞机到底能飞多远。</p>
-                </div>
-                <div id="resultTags" class="result-tags"></div>
-                <div class="result-actions">
-                  <button id="relaunchBtn" class="primary-btn" type="button">再来一局</button>
-                  <button id="randomizeBtn" class="ghost-btn" type="button">随机试机</button>
-                </div>
-              </div>
-            </div>
+            </section>
           </section>
 
-          <aside class="panel board-panel">
-            <div class="panel-head">
-              <span class="step-tag cool">排行榜</span>
-              <h2>距离榜单</h2>
-            </div>
-            <div class="tabs">
-              <button id="globalTab" class="tab-btn active" type="button">总榜</button>
-              <button id="personalTab" class="tab-btn" type="button">个人记录</button>
-            </div>
-            <div id="globalBoard" class="board-view"></div>
-            <div id="personalBoard" class="board-view hidden"></div>
-          </aside>
+          <section id="launchPage" class="workspace launch-page hidden">
+            <aside class="panel launch-sidebar">
+              <div class="panel-head">
+                <span class="step-tag">放飞页</span>
+                <h2>准备出手</h2>
+              </div>
+              <button id="goBuilderBtn" class="ghost-btn nav-btn" type="button">返回调试</button>
+              <div class="launch-sidebar-copy">
+                <p>当前纸张与参数会完整保留，返回调试后可以继续微调机型。</p>
+              </div>
+              <div id="launchBuildSummary" class="launch-build-summary"></div>
+            </aside>
+
+            <section class="panel arena-panel">
+              <div class="panel-head arena-head">
+                <span class="step-tag cool">飞行演算区</span>
+                <h2>蓄力、瞄准、发射</h2>
+              </div>
+
+              <div class="flight-stage">
+                <canvas id="flightCanvas" width="1600" height="920"></canvas>
+
+                <div class="stage-topline">
+                  <div class="run-metrics">
+                    <div>
+                      <span>当前距离</span>
+                      <strong id="liveDistance">0.0 m</strong>
+                    </div>
+                    <div>
+                      <span>当前高度</span>
+                      <strong id="liveHeight">0.0 m</strong>
+                    </div>
+                    <div>
+                      <span>风扰动</span>
+                      <strong id="windReadout">平稳</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="introOverlay" class="intro-overlay">
+                  <p class="intro-title">准备首飞</p>
+                  <p>按住左下角发射台蓄力，向右上拖动决定角度，在高亮释放区松手更稳。</p>
+                </div>
+
+                <div class="stage-launch">
+                  <div class="launch-title">
+                    <h3>发射台</h3>
+                    <span id="throwHint">按住开始蓄力，拖出一条向右上方的发射轨迹</span>
+                  </div>
+                  <div id="launchPad" class="launch-pad">
+                    <div class="drag-guide"></div>
+                    <div class="drag-arrow"></div>
+                    <div class="pad-center">按住并拖拽瞄准</div>
+                    <div id="aimLine" class="aim-line"></div>
+                    <div id="aimTip" class="aim-tip"></div>
+                  </div>
+                  <div class="throw-readout">
+                    <div>
+                      <span>力度</span>
+                      <strong id="powerReadout">0%</strong>
+                    </div>
+                    <div>
+                      <span>角度</span>
+                      <strong id="angleReadout">28°</strong>
+                    </div>
+                    <div>
+                      <span>释放稳定</span>
+                      <strong id="releaseReadout">未释放</strong>
+                    </div>
+                  </div>
+                  <div class="power-meter-shell">
+                    <div class="sweet-spot"></div>
+                    <div id="powerMeter" class="power-meter"></div>
+                  </div>
+                </div>
+
+                <div class="stage-result">
+                  <div class="result-main">
+                    <strong id="resultDistance">0.0 m</strong>
+                    <p id="resultSummary">调好参数后发射，看看这架纸飞机到底能飞多远。</p>
+                  </div>
+                  <div id="resultTags" class="result-tags"></div>
+                  <div class="result-actions">
+                    <button id="relaunchBtn" class="primary-btn" type="button">再来一局</button>
+                    <button id="randomizeBtn" class="ghost-btn" type="button">随机试机</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <aside class="panel board-panel">
+              <div class="panel-head">
+                <span class="step-tag cool">排行榜</span>
+                <h2>距离榜单</h2>
+              </div>
+              <div class="tabs">
+                <button id="globalTab" class="tab-btn active" type="button">总榜</button>
+                <button id="personalTab" class="tab-btn" type="button">个人记录</button>
+              </div>
+              <div id="globalBoard" class="board-view"></div>
+              <div id="personalBoard" class="board-view hidden"></div>
+            </aside>
+          </section>
         </main>
       </section>
     </div>

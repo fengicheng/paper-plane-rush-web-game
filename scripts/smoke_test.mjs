@@ -65,7 +65,8 @@ try {
   }
 
   await page.fill("#nicknameInput", "SmokePilot");
-  await page.click("#randomizeBtn");
+  await page.click("#goLaunchBtn");
+  await page.waitForSelector("#launchPad");
 
   const launchPad = page.locator("#launchPad");
   const box = await launchPad.boundingBox();

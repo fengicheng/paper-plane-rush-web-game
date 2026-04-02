@@ -102,6 +102,7 @@ const state = {
   personalRuns: loadPersonalRuns(),
   globalBoard: loadGlobalBoard(),
   activeBoard: "global",
+  activeWorkspace: "builder",
   lastRun: null,
 };
 
@@ -149,6 +150,11 @@ function cacheRefs() {
   refs.personalTab = document.getElementById("personalTab");
   refs.globalBoard = document.getElementById("globalBoard");
   refs.personalBoard = document.getElementById("personalBoard");
+  refs.builderPage = document.getElementById("builderPage");
+  refs.launchPage = document.getElementById("launchPage");
+  refs.goLaunchBtn = document.getElementById("goLaunchBtn");
+  refs.goBuilderBtn = document.getElementById("goBuilderBtn");
+  refs.launchBuildSummary = document.getElementById("launchBuildSummary");
   refs.introOverlay = document.getElementById("introOverlay");
   refs.landingScreen = document.getElementById("landingScreen");
   refs.gameScreen = document.getElementById("gameScreen");
@@ -159,6 +165,8 @@ function cacheRefs() {
 
 function bindEvents() {
   refs.startGameBtn.addEventListener("click", startGame);
+  refs.goLaunchBtn.addEventListener("click", () => switchWorkspace("launch"));
+  refs.goBuilderBtn.addEventListener("click", () => switchWorkspace("builder"));
   refs.nicknameInput.addEventListener("change", handleNicknameChange);
   refs.relaunchBtn.addEventListener("click", resetForNextRun);
   refs.randomizeBtn.addEventListener("click", randomizeBuild);
@@ -179,7 +187,17 @@ function bindEvents() {
 function startGame() {
   refs.landingScreen.classList.add("hidden");
   refs.gameScreen.classList.remove("hidden");
+  switchWorkspace("builder");
   drawIdleScene();
+}
+
+function switchWorkspace(nextWorkspace) {
+  state.activeWorkspace = nextWorkspace;
+  refs.builderPage.classList.toggle("hidden", nextWorkspace !== "builder");
+  refs.launchPage.classList.toggle("hidden", nextWorkspace !== "launch");
+  if (nextWorkspace === "launch") {
+    drawIdleScene();
+  }
 }
 
 function loadNickname() {
@@ -290,12 +308,35 @@ function renderAll() {
   renderStatBars();
   renderHeroStats();
   renderPlanePreview();
+  renderLaunchBuildSummary();
   renderBoards();
   renderResultSummary(state.lastRun);
   refs.angleReadout.textContent = `${Math.round(state.throwState.angle)}°`;
   refs.powerReadout.textContent = `${Math.round(state.throwState.power)}%`;
   refs.releaseReadout.textContent = state.throwState.stabilityLabel;
   refs.powerMeter.style.width = `${state.throwState.power}%`;
+}
+
+function renderLaunchBuildSummary() {
+  const paper = getSelectedPaper();
+  refs.launchBuildSummary.innerHTML = `
+    <div class="summary-chip">
+      <span>当前纸张</span>
+      <strong>${paper.name}</strong>
+    </div>
+    <div class="summary-chip">
+      <span>机头 / 机翼</span>
+      <strong>${state.parameters.nose} / ${state.parameters.wing}</strong>
+    </div>
+    <div class="summary-chip">
+      <span>对称 / 尾翼</span>
+      <strong>${state.parameters.symmetry} / ${state.parameters.tail}</strong>
+    </div>
+    <div class="summary-chip">
+      <span>建议</span>
+      <strong>准备好后直接在中间飞行区完成发射。</strong>
+    </div>
+  `;
 }
 
 function renderStatBars() {
