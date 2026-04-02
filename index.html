@@ -12,31 +12,65 @@
   </head>
   <body>
     <div class="page-shell">
-      <header class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Web Game MVP</p>
-          <h1>纸飞机冲榜</h1>
-          <p class="hero-text">
-            半拟真折纸 + 物理投掷 + 成绩竞争。选纸、调结构、抓住最佳释放区，把纸飞机扔到更远的地方。
-          </p>
+      <section id="landingScreen" class="landing-screen">
+        <div class="landing-hero">
+          <div class="hero-copy landing-copy">
+            <p class="eyebrow">Web Game MVP</p>
+            <h1>纸飞机冲榜</h1>
+            <p class="hero-text">
+              折一架能冲榜的纸飞机。你需要选纸、调结构、抓住最佳释放时机，再用一次漂亮的投掷把距离拉到更远。
+            </p>
+            <div class="landing-actions">
+              <button id="startGameBtn" class="primary-btn landing-btn" type="button">开始游戏</button>
+              <p class="landing-tip">首局只要十几秒，重点是摸清纸张、角度和释放时机。</p>
+            </div>
+          </div>
+          <div class="hero-stats landing-stats">
+            <div class="stat-card large">
+              <span>玩法说明</span>
+              <strong>选纸 -> 调参 -> 投掷 -> 冲榜</strong>
+              <p>网页端轻休闲 + 物理投掷 + 成绩竞争</p>
+            </div>
+            <div class="feature-card">
+              <strong>参数化折纸</strong>
+              <p>机头、机翼、对称度、尾翼共同决定飞机性格。</p>
+            </div>
+            <div class="feature-card">
+              <strong>投掷有技术差</strong>
+              <p>按住蓄力，拖拽决定角度，在最佳释放区松手更稳。</p>
+            </div>
+            <div class="feature-card">
+              <strong>排行榜驱动</strong>
+              <p>不断微调构筑与出手时机，刷新个人最远纪录。</p>
+            </div>
+          </div>
         </div>
-        <div class="hero-stats">
-          <div class="stat-card">
-            <span>个人最佳</span>
-            <strong id="bestDistance">0.0 m</strong>
-          </div>
-          <div class="stat-card">
-            <span>最近成绩</span>
-            <strong id="lastDistance">-</strong>
-          </div>
-          <div class="stat-card">
-            <span>常用纸张</span>
-            <strong id="favoritePaper">普通打印纸</strong>
-          </div>
-        </div>
-      </header>
+      </section>
 
-      <main class="layout">
+      <section id="gameScreen" class="game-screen hidden">
+        <header class="game-hero">
+          <div class="game-title panel">
+            <p class="eyebrow">Flight Lab</p>
+            <h1>纸飞机冲榜</h1>
+            <p class="hero-text">先在左侧完成折纸构筑，再到中间发射区投出这一局的真正发挥。</p>
+          </div>
+          <div class="hero-stats game-stats">
+            <div class="stat-card">
+              <span>个人最佳</span>
+              <strong id="bestDistance">0.0 m</strong>
+            </div>
+            <div class="stat-card">
+              <span>最近成绩</span>
+              <strong id="lastDistance">-</strong>
+            </div>
+            <div class="stat-card">
+              <span>常用纸张</span>
+              <strong id="favoritePaper">普通打印纸</strong>
+            </div>
+          </div>
+        </header>
+
+        <main class="layout">
         <section class="panel controls-panel">
           <div class="section-header">
             <span class="step-tag">STEP 1</span>
@@ -142,12 +176,14 @@
             <div class="launch-card">
               <div class="launch-title">
                 <h3>发射台</h3>
-                <span id="throwHint">按住开始蓄力，向上拖动调整角度</span>
+                <span id="throwHint">按住开始蓄力，拖出一条向右上方的发射轨迹</span>
               </div>
               <div id="launchPad" class="launch-pad">
                 <div class="drag-guide"></div>
                 <div class="drag-arrow"></div>
                 <div class="pad-center">按住并向上拖动</div>
+                <div id="aimLine" class="aim-line"></div>
+                <div id="aimTip" class="aim-tip"></div>
               </div>
               <div class="throw-readout">
                 <div>
@@ -199,9 +235,10 @@
           <div id="globalBoard" class="board-view"></div>
           <div id="personalBoard" class="board-view hidden"></div>
         </section>
-      </main>
+        </main>
+      </section>
     </div>
 
     <script type="module" src="./src/main.js"></script>
   </body>
-  </html>
+</html>

@@ -65,6 +65,8 @@ const seededLeaderboard = [
 ];
 
 const DISTANCE_SCALE = 10.6;
+const LAUNCH_X = 42;
+const WORLD_WIDTH = 2600;
 
 const state = {
   selectedPaperId: "default",
@@ -77,6 +79,11 @@ const state = {
     stabilityLabel: "未释放",
     releaseScore: 0,
     startY: 0,
+    startX: 0,
+    originX: 0,
+    originY: 0,
+    aimX: 0,
+    aimY: 0,
     meterDirection: 1,
     meterRaf: null,
   },
@@ -128,6 +135,8 @@ function cacheRefs() {
   refs.releaseReadout = document.getElementById("releaseReadout");
   refs.powerMeter = document.getElementById("powerMeter");
   refs.launchPad = document.getElementById("launchPad");
+  refs.aimLine = document.getElementById("aimLine");
+  refs.aimTip = document.getElementById("aimTip");
   refs.throwHint = document.getElementById("throwHint");
   refs.resultDistance = document.getElementById("resultDistance");
   refs.resultSummary = document.getElementById("resultSummary");
@@ -139,11 +148,15 @@ function cacheRefs() {
   refs.globalBoard = document.getElementById("globalBoard");
   refs.personalBoard = document.getElementById("personalBoard");
   refs.introOverlay = document.getElementById("introOverlay");
+  refs.landingScreen = document.getElementById("landingScreen");
+  refs.gameScreen = document.getElementById("gameScreen");
+  refs.startGameBtn = document.getElementById("startGameBtn");
   refs.canvas = document.getElementById("flightCanvas");
   refs.ctx = refs.canvas.getContext("2d");
 }
 
 function bindEvents() {
+  refs.startGameBtn.addEventListener("click", startGame);
   refs.nicknameInput.addEventListener("change", handleNicknameChange);
   refs.relaunchBtn.addEventListener("click", resetForNextRun);
   refs.randomizeBtn.addEventListener("click", randomizeBuild);
@@ -159,6 +172,12 @@ function bindEvents() {
       onLaunchEnd(event);
     }
   });
+}
+
+function startGame() {
+  refs.landingScreen.classList.add("hidden");
+  refs.gameScreen.classList.remove("hidden");
+  drawIdleScene();
 }
 
 function loadNickname() {
@@ -343,22 +362,37 @@ function getSelectedPaper() {
 function onLaunchStart(event) {
   if (state.sim.running) return;
   refs.introOverlay.classList.add("hidden");
+  const rect = refs.launchPad.getBoundingClientRect();
+  state.throwState.power = 0;
   state.throwState.active = true;
+  state.throwState.startX = event.clientX;
   state.throwState.startY = event.clientY;
+  state.throwState.originX = rect.width * 0.5;
+  state.throwState.originY = rect.height - 34;
+  state.throwState.aimX = state.throwState.originX + 90;
+  state.throwState.aimY = state.throwState.originY - 48;
   state.throwState.angle = 28;
   state.throwState.stabilityLabel = "蓄力中";
   state.throwState.meterDirection = 1;
   refs.launchPad.classList.add("active");
-  refs.throwHint.textContent = "继续按住保持蓄力，向上拖动会抬高投掷角度";
+  refs.throwHint.textContent = "拖向右上方调整角度，线越平越低，越陡越高";
   refs.launchPad.setPointerCapture(event.pointerId);
+  updateAimVisual();
   startPowerLoop();
   renderAll();
 }
 
 function onLaunchMove(event) {
   if (!state.throwState.active) return;
-  const dragY = clamp(state.throwState.startY - event.clientY, -15, 140);
-  state.throwState.angle = clamp(18 + dragY * 0.22, 8, 48);
+  const rect = refs.launchPad.getBoundingClientRect();
+  const localX = clamp(event.clientX - rect.left, 18, rect.width - 18);
+  const localY = clamp(event.clientY - rect.top, 18, rect.height - 18);
+  const dx = Math.max(24, localX - state.throwState.originX);
+  const dy = Math.max(8, state.throwState.originY - localY);
+  state.throwState.aimX = localX;
+  state.throwState.aimY = localY;
+  state.throwState.angle = clamp((Math.atan2(dy, dx) * 180) / Math.PI, 10, 60);
+  updateAimVisual();
   refs.angleReadout.textContent = `${Math.round(state.throwState.angle)}°`;
 }
 
@@ -379,6 +413,7 @@ function onLaunchEnd(event) {
   state.throwState.stabilityLabel = getReleaseLabel(releaseScore);
   refs.releaseReadout.textContent = state.throwState.stabilityLabel;
   state.throwState.active = false;
+  hideAimVisual();
   startSimulation();
 }
 
@@ -387,7 +422,28 @@ function cancelLaunch() {
   stopPowerLoop();
   state.throwState.active = false;
   refs.launchPad.classList.remove("active");
-  refs.throwHint.textContent = "按住开始蓄力，向上拖动调整角度";
+  refs.throwHint.textContent = "按住开始蓄力，拖出一条向右上方的发射轨迹";
+  hideAimVisual();
+}
+
+function updateAimVisual() {
+  const dx = state.throwState.aimX - state.throwState.originX;
+  const dy = state.throwState.aimY - state.throwState.originY;
+  const length = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx);
+  refs.aimLine.style.opacity = "1";
+  refs.aimLine.style.width = `${length}px`;
+  refs.aimLine.style.left = `${state.throwState.originX}px`;
+  refs.aimLine.style.bottom = `${refs.launchPad.clientHeight - state.throwState.originY}px`;
+  refs.aimLine.style.transform = `rotate(${angle}rad)`;
+  refs.aimTip.style.opacity = "1";
+  refs.aimTip.style.left = `${state.throwState.aimX}px`;
+  refs.aimTip.style.top = `${state.throwState.aimY}px`;
+}
+
+function hideAimVisual() {
+  refs.aimLine.style.opacity = "0";
+  refs.aimTip.style.opacity = "0";
 }
 
 function startPowerLoop() {
@@ -449,7 +505,7 @@ function startSimulation() {
   state.sim.running = true;
   state.sim.points = [];
   state.sim.current = {
-    x: 42,
+    x: LAUNCH_X,
     y: refs.canvas.height - 116,
     vx: baseSpeed * Math.cos(angleRad),
     vy: -baseSpeed * Math.sin(angleRad) * (0.82 + tailBias * 0.36),
@@ -495,7 +551,7 @@ function startSimulation() {
     jet.rotation = clamp(jet.rotation + (jet.vy * 0.06 + turbulence * 14), -48, 72);
     state.sim.points.push({ x: jet.x, y: jet.y });
 
-    const distance = Math.max(0, (jet.x - 42) / DISTANCE_SCALE);
+    const distance = Math.max(0, (jet.x - LAUNCH_X) / DISTANCE_SCALE);
     const height = Math.max(0, (refs.canvas.height - 116 - jet.y) / 9.8);
     state.sim.maxDistance = Math.max(state.sim.maxDistance, distance);
     state.sim.maxHeight = Math.max(state.sim.maxHeight, height);
@@ -506,7 +562,7 @@ function startSimulation() {
     refs.windReadout.textContent = state.sim.windText;
     drawScene(distance, height);
 
-    if (jet.y >= refs.canvas.height - 92 || jet.x >= refs.canvas.width - 56 || jet.vx <= 0.6) {
+    if (jet.y >= refs.canvas.height - 92 || jet.x >= WORLD_WIDTH - 80 || jet.vx <= 0.6) {
       finishSimulation(distance, {
         releaseFactor,
         launchStability,
@@ -717,10 +773,11 @@ function resetForNextRun() {
   refs.powerReadout.textContent = "0%";
   refs.angleReadout.textContent = "28°";
   refs.releaseReadout.textContent = "未释放";
-  refs.throwHint.textContent = "按住开始蓄力，向上拖动调整角度";
+  refs.throwHint.textContent = "按住开始蓄力，拖出一条向右上方的发射轨迹";
   refs.liveDistance.textContent = "0.0 m";
   refs.liveHeight.textContent = "0.0 m";
   refs.windReadout.textContent = "平稳";
+  hideAimVisual();
   drawIdleScene();
 }
 
@@ -750,18 +807,22 @@ function getBestRun() {
 function drawIdleScene() {
   const ctx = refs.ctx;
   ctx.clearRect(0, 0, refs.canvas.width, refs.canvas.height);
-  drawBackdrop(ctx);
-  drawRunway(ctx);
-  drawDistanceMarkers(ctx, 0);
+  const cameraX = 0;
+  drawBackdrop(ctx, cameraX);
+  drawDistanceMarkers(ctx, cameraX, 0);
+  drawRunway(ctx, cameraX);
   drawPlane(ctx, 130, refs.canvas.height - 130, -18, getSelectedPaper().theme);
 }
 
 function drawScene(distance, height, landed = false) {
   const ctx = refs.ctx;
   ctx.clearRect(0, 0, refs.canvas.width, refs.canvas.height);
-  drawBackdrop(ctx);
-  drawDistanceMarkers(ctx, distance);
-  drawRunway(ctx);
+  const jet = state.sim.current;
+  const focusX = jet ? jet.x : LAUNCH_X;
+  const cameraX = getCameraX(focusX);
+  drawBackdrop(ctx, cameraX);
+  drawDistanceMarkers(ctx, cameraX, distance);
+  drawRunway(ctx, cameraX);
 
   if (state.sim.points.length > 1) {
     ctx.save();
@@ -769,22 +830,26 @@ function drawScene(distance, height, landed = false) {
     ctx.lineWidth = 4;
     ctx.beginPath();
     state.sim.points.forEach((point, index) => {
-      if (index === 0) ctx.moveTo(point.x, point.y);
-      else ctx.lineTo(point.x, point.y);
+      const screenX = point.x - cameraX;
+      if (index === 0) ctx.moveTo(screenX, point.y);
+      else ctx.lineTo(screenX, point.y);
     });
     ctx.stroke();
     ctx.restore();
   }
 
-  const jet = state.sim.current;
   if (jet) {
-    drawPlane(ctx, jet.x, landed ? refs.canvas.height - 94 : jet.y, jet.rotation, getSelectedPaper().theme);
+    drawPlane(ctx, jet.x - cameraX, landed ? refs.canvas.height - 94 : jet.y, jet.rotation, getSelectedPaper().theme);
   }
 
   drawHudCloud(ctx, distance, height);
 }
 
-function drawBackdrop(ctx) {
+function getCameraX(focusX) {
+  return clamp(focusX - refs.canvas.width * 0.32, 0, WORLD_WIDTH - refs.canvas.width);
+}
+
+function drawBackdrop(ctx, cameraX) {
   const gradient = ctx.createLinearGradient(0, 0, 0, refs.canvas.height);
   gradient.addColorStop(0, "#bfe0f3");
   gradient.addColorStop(0.55, "#d8eef8");
@@ -794,18 +859,21 @@ function drawBackdrop(ctx) {
   ctx.fillRect(0, 0, refs.canvas.width, refs.canvas.height);
 
   ctx.fillStyle = "rgba(255,255,255,0.38)";
-  drawCloud(ctx, 120, 98, 58);
-  drawCloud(ctx, 340, 160, 44);
-  drawCloud(ctx, 840, 124, 68);
-  drawCloud(ctx, 1040, 212, 52);
+  const parallax = cameraX * 0.18;
+  drawCloud(ctx, 120 - parallax, 98, 58);
+  drawCloud(ctx, 340 - parallax, 160, 44);
+  drawCloud(ctx, 840 - parallax, 124, 68);
+  drawCloud(ctx, 1040 - parallax, 212, 52);
+  drawCloud(ctx, 1440 - parallax, 120, 48);
 }
 
-function drawRunway(ctx) {
+function drawRunway(ctx, cameraX) {
   ctx.save();
   ctx.fillStyle = "#97bc72";
   ctx.fillRect(0, refs.canvas.height - 120, refs.canvas.width, 120);
   ctx.fillStyle = "rgba(53, 98, 56, 0.18)";
-  for (let i = 0; i < refs.canvas.width; i += 70) {
+  const stripeOffset = -((cameraX * 0.35) % 70);
+  for (let i = stripeOffset; i < refs.canvas.width + 70; i += 70) {
     ctx.fillRect(i, refs.canvas.height - 92, 26, 36);
   }
   ctx.fillStyle = "#d1b38c";
@@ -813,18 +881,21 @@ function drawRunway(ctx) {
   ctx.restore();
 }
 
-function drawDistanceMarkers(ctx, distance) {
+function drawDistanceMarkers(ctx, cameraX, distance) {
   ctx.save();
   ctx.strokeStyle = "rgba(47, 111, 161, 0.16)";
   ctx.fillStyle = "rgba(46, 36, 28, 0.52)";
   ctx.font = "18px Segoe UI";
-  for (let i = 0; i < 12; i += 1) {
-    const x = 90 + i * 90;
+  const maxMarker = Math.floor((WORLD_WIDTH - LAUNCH_X) / DISTANCE_SCALE / 10) * 10;
+  for (let meters = 0; meters <= maxMarker; meters += 10) {
+    const worldX = LAUNCH_X + meters * DISTANCE_SCALE;
+    const x = worldX - cameraX;
+    if (x < -80 || x > refs.canvas.width + 80) continue;
     ctx.beginPath();
     ctx.moveTo(x, refs.canvas.height - 120);
     ctx.lineTo(x, refs.canvas.height - 84);
     ctx.stroke();
-    ctx.fillText(`${i * 10}m`, x - 18, refs.canvas.height - 52);
+    ctx.fillText(`${meters}m`, x - 18, refs.canvas.height - 52);
   }
   ctx.font = "bold 28px Segoe UI";
   ctx.fillStyle = "rgba(255,255,255,0.9)";

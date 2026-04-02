@@ -49,6 +49,7 @@ try {
 
   const url = targetUrl || "http://127.0.0.1:4173";
   await page.goto(url);
+  await page.click("#startGameBtn");
   await page.waitForSelector("#paperOptions .paper-option");
   await page.waitForSelector("#parameterControls input[type='range']");
 
@@ -77,6 +78,7 @@ try {
   await page.mouse.down();
   await page.waitForTimeout(620);
   await page.mouse.move(box.x + box.width / 2, box.y + 42, { steps: 12 });
+  const angleText = await page.locator("#angleReadout").textContent();
   await page.mouse.up();
 
   await page.waitForTimeout(2600);
@@ -86,6 +88,10 @@ try {
 
   if (!Number.isFinite(resultDistance) || resultDistance <= 0) {
     throw new Error(`Expected a positive result distance, got "${resultDistanceText}"`);
+  }
+
+  if (!angleText || angleText === "28°") {
+    throw new Error(`Expected throw angle to change during drag, got "${angleText}"`);
   }
 
   if (pageErrors.length > 0) {
@@ -98,6 +104,7 @@ try {
         url,
         paperCount,
         sliderCount,
+        angleText,
         resultDistance,
       },
       null,
