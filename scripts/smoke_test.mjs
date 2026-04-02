@@ -51,20 +51,28 @@ try {
   await page.goto(url);
   await page.click("#startGameBtn");
   await page.waitForSelector("#paperOptions .paper-option");
-  await page.waitForSelector("#parameterControls input[type='range']");
+  await page.waitForSelector("#foldSteps .fold-step-button");
+  await page.waitForSelector("#stepRangeInput");
 
   const paperCount = await page.locator("#paperOptions .paper-option").count();
-  const sliderCount = await page.locator("#parameterControls input[type='range']").count();
+  const foldStepCount = await page.locator("#foldSteps .fold-step-button").count();
 
   if (paperCount !== 3) {
     throw new Error(`Expected 3 paper options, received ${paperCount}`);
   }
 
-  if (sliderCount !== 3) {
-    throw new Error(`Expected 3 parameter sliders, received ${sliderCount}`);
+  if (foldStepCount !== 4) {
+    throw new Error(`Expected 4 fold steps, received ${foldStepCount}`);
   }
 
   await page.fill("#nicknameInput", "SmokePilot");
+  await page.click("#nextStepBtn");
+  const currentStepTitle = await page.locator("#currentStepTitle").textContent();
+
+  if (!currentStepTitle || !currentStepTitle.includes("折机头")) {
+    throw new Error(`Expected step title to move to nose fold, got "${currentStepTitle}"`);
+  }
+
   await page.click("#goLaunchBtn");
   await page.waitForSelector("#launchPad");
 
@@ -123,7 +131,7 @@ try {
       {
         url,
         paperCount,
-        sliderCount,
+        foldStepCount,
         maxAngleText,
         angleText,
         resultDistance,

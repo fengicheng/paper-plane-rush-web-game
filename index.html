@@ -22,14 +22,14 @@
             </p>
             <div class="landing-actions">
               <button id="startGameBtn" class="primary-btn" type="button">开始游戏</button>
-              <p class="landing-tip">点击开始后进入主界面，左侧调机，中央起飞，右侧看榜。</p>
+              <p class="landing-tip">点击开始后进入主界面，左侧折纸，中间放飞，右侧看榜。</p>
             </div>
           </div>
 
           <div class="landing-panel">
             <div class="landing-card accent">
               <span>玩法</span>
-              <strong>选纸 -> 调参 -> 投掷 -> 冲榜</strong>
+              <strong>选纸 -> 折纸 -> 投掷 -> 冲榜</strong>
             </div>
             <div class="landing-card">
               <span>折纸</span>
@@ -74,11 +74,11 @@
             <section class="panel controls-panel">
               <div class="panel-head">
                 <span class="step-tag">折纸页</span>
-                <h2>构筑你的机型</h2>
+                <h2>折纸调试</h2>
               </div>
 
-              <div class="builder-layout">
-                <div class="builder-controls">
+              <div class="builder-layout builder-layout-redesign">
+                <aside class="builder-sidebar">
                   <div class="field-block compact">
                     <label for="nicknameInput">玩家昵称</label>
                     <input id="nicknameInput" type="text" maxlength="12" placeholder="输入昵称上榜" />
@@ -94,45 +94,86 @@
 
                   <div class="field-block">
                     <div class="field-head">
-                      <label>折纸参数</label>
-                      <span>所有修改会立刻反映到预估和机身外观上</span>
+                      <label>折纸步骤</label>
+                      <span>按顺序完成构筑</span>
                     </div>
-                    <div id="parameterControls" class="slider-group"></div>
+                    <div id="foldSteps" class="fold-steps fold-steps-detailed"></div>
                   </div>
 
-                  <div class="field-block">
-                    <div class="fold-steps">
-                      <div class="fold-step active">
-                        <span>1</span>
+                  <div class="step-tip-card">
+                    <span class="mini-label">当前提示</span>
+                    <strong id="stepTipTitle">先把纸对折</strong>
+                    <p id="stepTipBody">把骨架压稳，后面的机头和机翼才会更听话。</p>
+                  </div>
+                </aside>
+
+                <section class="builder-stage panel inner-panel">
+                  <div class="builder-stage-head">
+                    <span class="step-tag cool">折纸舞台</span>
+                    <div class="stage-step-readout">
+                      <span id="currentStepEyebrow">第一步</span>
+                      <strong id="currentStepTitle">对折定骨架</strong>
+                    </div>
+                  </div>
+
+                  <div class="fold-stage-card">
+                    <div class="fold-stage-topline">
                       <div>
-                        <strong>对折</strong>
-                        <p>决定基础骨架，准备后续折叠</p>
+                        <span>当前折法</span>
+                        <strong id="currentStepValue">工整对折</strong>
                       </div>
+                      <div>
+                        <span>操作结果</span>
+                        <strong id="currentStepOutcome">骨架平稳，后续折叠更顺手</strong>
                       </div>
-                      <div class="fold-step">
-                        <span>2</span>
-                        <div>
-                          <strong>折机头</strong>
-                          <p>尖锐更快，但也更难压住</p>
-                        </div>
-                      </div>
-                      <div class="fold-step">
-                        <span>3</span>
-                        <div>
-                          <strong>折机翼</strong>
-                          <p>更宽更能飘，也更容易吃风</p>
-                        </div>
-                      </div>
-                      <div class="fold-step">
-                        <span>4</span>
-                        <div>
-                          <strong>调尾翼</strong>
-                          <p>决定抬头滑翔还是提前下坠</p>
-                        </div>
+                    </div>
+
+                    <div id="foldWorkbench" class="fold-workbench" data-step="crease">
+                      <div class="fold-board-grid"></div>
+                      <div class="fold-board-shadow"></div>
+                      <div class="fold-sheet base"></div>
+                      <div class="fold-sheet fold-left"></div>
+                      <div class="fold-sheet fold-right"></div>
+                      <div class="fold-guide guide-center"></div>
+                      <div class="fold-guide guide-head"></div>
+                      <div class="fold-guide guide-wing-left"></div>
+                      <div class="fold-guide guide-wing-right"></div>
+                      <div class="fold-guide guide-tail"></div>
+                      <div class="fold-anchor anchor-head">机头</div>
+                      <div class="fold-anchor anchor-wing">机翼</div>
+                      <div class="fold-anchor anchor-tail">尾翼</div>
+                      <div id="foldPlanePreview" class="plane-preview fold-stage-plane">
+                        <div class="plane-body"></div>
+                        <div class="plane-wing left"></div>
+                        <div class="plane-wing right"></div>
+                        <div class="plane-tail"></div>
                       </div>
                     </div>
                   </div>
-                </div>
+
+                  <div class="fold-control-card">
+                    <div class="fold-control-head">
+                      <div>
+                        <span class="mini-label">当前操作</span>
+                        <h3 id="currentStepName">对折定骨架</h3>
+                      </div>
+                      <div id="stepRangeReadout" class="step-value-pill">工整对折</div>
+                    </div>
+                    <p id="currentStepDescription" class="step-description">
+                      先把纸对折，打好骨架。折得越工整，飞起来越稳；压得太死则会损失一点滑翔空间。
+                    </p>
+                    <div id="currentStepChoices" class="step-choice-row"></div>
+                    <div class="step-range-wrap">
+                      <span id="stepRangeMin">松折</span>
+                      <input id="stepRangeInput" type="range" min="0" max="100" step="1" value="54" />
+                      <span id="stepRangeMax">压实</span>
+                    </div>
+                    <div class="step-nav">
+                      <button id="prevStepBtn" class="ghost-btn" type="button">上一步</button>
+                      <button id="nextStepBtn" class="primary-btn" type="button">下一步</button>
+                    </div>
+                  </div>
+                </section>
 
                 <aside class="builder-visual panel inner-panel">
                   <div class="builder-visual-head">
@@ -149,9 +190,14 @@
                       </div>
                     </div>
                     <div class="airframe-readout">
-                      <div class="mini-label">飞行预估</div>
+                      <div class="mini-label">飞行倾向</div>
                       <div id="statBars" class="stat-bars"></div>
                     </div>
+                  </div>
+                  <div id="trendSummary" class="trend-summary"></div>
+                  <div class="builder-advice-card">
+                    <span class="mini-label">试飞建议</span>
+                    <p id="buildAdvice">这架飞机适合先稳着投，别一上来拉太高。</p>
                   </div>
                 </aside>
               </div>

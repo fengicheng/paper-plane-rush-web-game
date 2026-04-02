@@ -30,6 +30,12 @@ const papers = [
 
 const parameters = [
   {
+    key: "crease",
+    name: "对折定骨架",
+    description: "先把骨架压稳，过松会发飘，过紧会损失一点滑翔空间。",
+    value: 54,
+  },
+  {
     key: "nose",
     name: "机头尖锐度",
     description: "头更尖，飞得更快，但俯冲风险会上升。",
@@ -49,6 +55,114 @@ const parameters = [
   },
 ];
 
+const FOLD_STEPS = [
+  {
+    key: "crease",
+    eyebrow: "第一步",
+    title: "对折定骨架",
+    tipTitle: "先把纸对折",
+    tipBody: "把骨架压稳，后面的机头和机翼才会更听话。",
+    stageOutcome: "骨架平稳，后续折叠更顺手",
+    description:
+      "先把纸对折，打好骨架。折得越工整，飞起来越稳；压得太死则会损失一点滑翔空间。",
+    minLabel: "松折",
+    maxLabel: "压实",
+    choices: [
+      { label: "松折", value: 28 },
+      { label: "工整对折", value: 54 },
+      { label: "压实折痕", value: 82 },
+    ],
+    getValueText(value) {
+      if (value < 40) return "松折";
+      if (value < 70) return "工整对折";
+      return "压实折痕";
+    },
+    getOutcome(value) {
+      if (value < 40) return "骨架偏松，更容易在气流里发飘";
+      if (value < 70) return "骨架均衡，后续折叠和放飞都更稳";
+      return "骨架很紧实，但会吃掉一点滑翔延展";
+    },
+  },
+  {
+    key: "nose",
+    eyebrow: "第二步",
+    title: "折机头",
+    tipTitle: "把机头折出来",
+    tipBody: "机头越长越尖，起飞越猛，但也更容易往下扎。",
+    stageOutcome: "机头决定起飞速度和俯冲倾向",
+    description: "把机头折出来。头越尖越快，越长越猛，但前段更容易俯冲，容错也会下降。",
+    minLabel: "短头",
+    maxLabel: "长尖头",
+    choices: [
+      { label: "短头", value: 30 },
+      { label: "标准", value: 60 },
+      { label: "长尖头", value: 84 },
+    ],
+    getValueText(value) {
+      if (value < 42) return "短机头";
+      if (value < 72) return "标准机头";
+      return "长尖机头";
+    },
+    getOutcome(value) {
+      if (value < 42) return "起步会更柔和，整体更容易控";
+      if (value < 72) return "起飞和稳定比较均衡，适合大多数尝试";
+      return "前段冲得更猛，但俯冲和失控风险更高";
+    },
+  },
+  {
+    key: "wing",
+    eyebrow: "第三步",
+    title: "折机翼",
+    tipTitle: "把机翼拉开",
+    tipBody: "翼面越宽越能飘，但中段更容易被风带着晃。",
+    stageOutcome: "机翼决定滑翔距离和抗风表现",
+    description: "机翼决定它能不能滑起来。越宽越能飘，但阻力更大，中段也更容易吃风。",
+    minLabel: "窄翼",
+    maxLabel: "宽翼",
+    choices: [
+      { label: "窄翼", value: 28 },
+      { label: "均衡翼", value: 54 },
+      { label: "宽翼", value: 82 },
+    ],
+    getValueText(value) {
+      if (value < 40) return "窄翼";
+      if (value < 70) return "均衡翼";
+      return "宽翼";
+    },
+    getOutcome(value) {
+      if (value < 40) return "更利于快速穿出去，但滑翔会偏短";
+      if (value < 70) return "升力和速度较平衡，稳定刷分更舒服";
+      return "更能飘更能挂空，但中段更容易吃风";
+    },
+  },
+  {
+    key: "tail",
+    eyebrow: "第四步",
+    title: "调尾翼",
+    tipTitle: "最后调尾翼",
+    tipBody: "尾翼太高容易抬头过猛，中段可能直接失速。",
+    stageOutcome: "尾翼决定抬头、平飞还是提前下坠",
+    description: "最后微调尾翼，让飞机决定是平飞、抬头，还是提前下坠。中等幅度通常最稳。",
+    minLabel: "平尾",
+    maxLabel: "上翘",
+    choices: [
+      { label: "平尾", value: 24 },
+      { label: "轻翘", value: 48 },
+      { label: "上翘", value: 78 },
+    ],
+    getValueText(value) {
+      if (value < 35) return "平尾";
+      if (value < 65) return "轻翘尾翼";
+      return "上翘尾翼";
+    },
+    getOutcome(value) {
+      if (value < 35) return "更容易贴着前段平飞，但下坠也会更快";
+      if (value < 65) return "抬头和滑翔较均衡，比较容易飞出完整航线";
+      return "更容易抬头滑翔，但中段有明显失速风险";
+    },
+  },
+];
+
 const seededLeaderboard = [
   { nickname: "纸翼学霸", distance: 124.7, paper: "轻薄笔记纸", createdAt: "2026-03-28 12:40", source: "seed" },
   { nickname: "风洞老手", distance: 118.3, paper: "硬质卡纸", createdAt: "2026-03-30 18:12", source: "seed" },
@@ -64,6 +178,11 @@ const SIMULATION_SPEED = 0.42;
 const LAUNCH_X = 42;
 const WORLD_WIDTH = 4200;
 const CAMERA_MIN_Y = -260;
+const MUSIC_VOLUME = 0.12;
+const MUSIC_TRACKS = {
+  builder: "./1.mp3",
+  launch: "./2.mp3",
+};
 
 const state = {
   selectedPaperId: "default",
@@ -98,6 +217,9 @@ const state = {
   globalBoard: loadGlobalBoard(),
   activeBoard: "global",
   activeWorkspace: "builder",
+  activeFoldStep: 0,
+  audioEnabled: false,
+  currentMusicKey: "",
   lastRun: null,
 };
 
@@ -107,8 +229,9 @@ document.addEventListener("DOMContentLoaded", init);
 
 function init() {
   cacheRefs();
+  initBackgroundMusic();
   renderPaperOptions();
-  renderParameterControls();
+  renderFoldSteps();
   bindEvents();
   loadNickname();
   recalcStats();
@@ -119,8 +242,27 @@ function init() {
 function cacheRefs() {
   refs.nicknameInput = document.getElementById("nicknameInput");
   refs.paperOptions = document.getElementById("paperOptions");
-  refs.parameterControls = document.getElementById("parameterControls");
+  refs.foldSteps = document.getElementById("foldSteps");
+  refs.stepTipTitle = document.getElementById("stepTipTitle");
+  refs.stepTipBody = document.getElementById("stepTipBody");
+  refs.currentStepEyebrow = document.getElementById("currentStepEyebrow");
+  refs.currentStepTitle = document.getElementById("currentStepTitle");
+  refs.currentStepValue = document.getElementById("currentStepValue");
+  refs.currentStepOutcome = document.getElementById("currentStepOutcome");
+  refs.foldWorkbench = document.getElementById("foldWorkbench");
+  refs.foldPlanePreview = document.getElementById("foldPlanePreview");
+  refs.currentStepName = document.getElementById("currentStepName");
+  refs.currentStepDescription = document.getElementById("currentStepDescription");
+  refs.currentStepChoices = document.getElementById("currentStepChoices");
+  refs.stepRangeInput = document.getElementById("stepRangeInput");
+  refs.stepRangeReadout = document.getElementById("stepRangeReadout");
+  refs.stepRangeMin = document.getElementById("stepRangeMin");
+  refs.stepRangeMax = document.getElementById("stepRangeMax");
+  refs.prevStepBtn = document.getElementById("prevStepBtn");
+  refs.nextStepBtn = document.getElementById("nextStepBtn");
   refs.statBars = document.getElementById("statBars");
+  refs.trendSummary = document.getElementById("trendSummary");
+  refs.buildAdvice = document.getElementById("buildAdvice");
   refs.bestDistance = document.getElementById("bestDistance");
   refs.lastDistance = document.getElementById("lastDistance");
   refs.favoritePaper = document.getElementById("favoritePaper");
@@ -161,11 +303,39 @@ function cacheRefs() {
   refs.ctx = refs.canvas.getContext("2d");
 }
 
+function initBackgroundMusic() {
+  refs.musicPlayers = {
+    builder: createMusicPlayer(MUSIC_TRACKS.builder),
+    launch: createMusicPlayer(MUSIC_TRACKS.launch),
+  };
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      pauseAllMusic();
+      return;
+    }
+    if (state.audioEnabled) {
+      syncBackgroundMusic();
+    }
+  });
+}
+
+function createMusicPlayer(src) {
+  const audio = new Audio(src);
+  audio.preload = "auto";
+  audio.loop = true;
+  audio.volume = MUSIC_VOLUME;
+  return audio;
+}
+
 function bindEvents() {
   refs.startGameBtn.addEventListener("click", startGame);
   refs.goLaunchBtn.addEventListener("click", () => switchWorkspace("launch"));
   refs.goBuilderBtn.addEventListener("click", () => switchWorkspace("builder"));
   refs.nicknameInput.addEventListener("change", handleNicknameChange);
+  refs.prevStepBtn.addEventListener("click", () => changeFoldStep(-1));
+  refs.nextStepBtn.addEventListener("click", () => changeFoldStep(1));
+  refs.stepRangeInput.addEventListener("input", handleCurrentStepInput);
   refs.modalRetryBtn.addEventListener("click", retryFromModal);
   refs.modalTuneBtn.addEventListener("click", tuneFromModal);
   refs.globalTab.addEventListener("click", () => switchBoard("global"));
@@ -185,8 +355,10 @@ function bindEvents() {
 function startGame() {
   refs.landingScreen.classList.add("hidden");
   refs.gameScreen.classList.remove("hidden");
+  state.audioEnabled = true;
   hideResultModal();
   switchWorkspace("builder");
+  syncBackgroundMusic();
   drawIdleScene();
 }
 
@@ -200,6 +372,7 @@ function switchWorkspace(nextWorkspace) {
   if (nextWorkspace === "launch") {
     drawIdleScene();
   }
+  syncBackgroundMusic();
 }
 
 function loadNickname() {
@@ -260,27 +433,74 @@ function renderPaperOptions() {
   });
 }
 
-function renderParameterControls() {
-  refs.parameterControls.innerHTML = parameters
-    .map(
-      (item) => `
-        <div class="slider-card">
-          <header>
-            <strong>${item.name}</strong>
-            <span id="value-${item.key}">${state.parameters[item.key]}</span>
-          </header>
-          <p>${item.description}</p>
-          <input type="range" min="0" max="100" step="1" value="${state.parameters[item.key]}" data-param="${item.key}" />
+function renderFoldSteps() {
+  refs.foldSteps.innerHTML = FOLD_STEPS.map((step, index) => {
+    const isActive = state.activeFoldStep === index;
+    const isCompleted = state.activeFoldStep > index;
+    const valueText = step.getValueText(state.parameters[step.key]);
+    return `
+      <button class="fold-step fold-step-button ${isActive ? "active" : ""} ${isCompleted ? "completed" : ""}" data-step-index="${index}" type="button">
+        <span>${index + 1}</span>
+        <div>
+          <strong>${step.title}</strong>
+          <p>${valueText}</p>
         </div>
-      `
-    )
+      </button>
+    `;
+  }).join("");
+
+  refs.foldSteps.querySelectorAll("[data-step-index]").forEach((element) => {
+    element.addEventListener("click", () => {
+      state.activeFoldStep = Number(element.dataset.stepIndex);
+      renderAll();
+    });
+  });
+}
+
+function handleCurrentStepInput() {
+  const step = getCurrentFoldStep();
+  state.parameters[step.key] = Number(refs.stepRangeInput.value);
+  recalcStats();
+  renderAll();
+  drawIdleScene();
+}
+
+function changeFoldStep(direction) {
+  const next = clamp(state.activeFoldStep + direction, 0, FOLD_STEPS.length - 1);
+  if (next === state.activeFoldStep) return;
+  state.activeFoldStep = next;
+  renderAll();
+}
+
+function renderCurrentStepControls() {
+  const step = getCurrentFoldStep();
+  const value = state.parameters[step.key];
+  refs.currentStepEyebrow.textContent = step.eyebrow;
+  refs.currentStepTitle.textContent = step.title;
+  refs.currentStepName.textContent = step.title;
+  refs.currentStepValue.textContent = step.getValueText(value);
+  refs.currentStepOutcome.textContent = step.getOutcome(value);
+  refs.currentStepDescription.textContent = step.description;
+  refs.stepTipTitle.textContent = step.tipTitle;
+  refs.stepTipBody.textContent = step.tipBody;
+  refs.stepRangeReadout.textContent = step.getValueText(value);
+  refs.stepRangeInput.value = String(value);
+  refs.stepRangeMin.textContent = step.minLabel;
+  refs.stepRangeMax.textContent = step.maxLabel;
+  refs.prevStepBtn.disabled = state.activeFoldStep === 0;
+  refs.nextStepBtn.disabled = state.activeFoldStep === FOLD_STEPS.length - 1;
+  refs.nextStepBtn.textContent = state.activeFoldStep === FOLD_STEPS.length - 1 ? "最后一步" : "下一步";
+
+  refs.currentStepChoices.innerHTML = step.choices
+    .map((choice) => {
+      const active = Math.abs(value - choice.value) <= 12 ? "active" : "";
+      return `<button class="step-choice ${active}" data-choice-value="${choice.value}" type="button">${choice.label}</button>`;
+    })
     .join("");
 
-  refs.parameterControls.querySelectorAll("input[type='range']").forEach((input) => {
-    input.addEventListener("input", () => {
-      state.parameters[input.dataset.param] = Number(input.value);
-      const readout = document.getElementById(`value-${input.dataset.param}`);
-      if (readout) readout.textContent = input.value;
+  refs.currentStepChoices.querySelectorAll("[data-choice-value]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.parameters[step.key] = Number(button.dataset.choiceValue);
       recalcStats();
       renderAll();
       drawIdleScene();
@@ -288,16 +508,30 @@ function renderParameterControls() {
   });
 }
 
+function getCurrentFoldStep() {
+  return FOLD_STEPS[state.activeFoldStep] || FOLD_STEPS[0];
+}
+
 function recalcStats() {
   const paper = getSelectedPaper();
-  const { nose, wing, tail } = state.parameters;
+  const { crease, nose, wing, tail } = state.parameters;
   const wingBalance = clamp(18 - Math.abs(54 - wing) * 0.36, 0, 18);
+  const creaseBalance = clamp(16 - Math.abs(56 - crease) * 0.28, 0, 16);
+  const creaseTension = Math.max(0, crease - 72);
 
   const stats = {
-    speed: clamp(paper.stats.speed + nose * 0.26 - wing * 0.14 - tail * 0.03, 20, 100),
-    lift: clamp(paper.stats.lift + wing * 0.24 + tail * 0.1 - paper.stats.weight * 0.08 + wingBalance * 0.14, 16, 100),
-    stability: clamp(paper.stats.stability + wingBalance - nose * 0.12 + tail * 0.04 - Math.abs(50 - wing) * 0.18, 12, 100),
-    weight: clamp(paper.stats.weight + nose * 0.05 + (100 - wing) * 0.04, 20, 95),
+    speed: clamp(paper.stats.speed + nose * 0.26 - wing * 0.14 - tail * 0.03 + creaseBalance * 0.08, 20, 100),
+    lift: clamp(
+      paper.stats.lift + wing * 0.24 + tail * 0.1 - paper.stats.weight * 0.08 + wingBalance * 0.14 - creaseTension * 0.1,
+      16,
+      100
+    ),
+    stability: clamp(
+      paper.stats.stability + wingBalance - nose * 0.12 + tail * 0.04 - Math.abs(50 - wing) * 0.18 + creaseBalance * 1.1,
+      12,
+      100
+    ),
+    weight: clamp(paper.stats.weight + nose * 0.05 + (100 - wing) * 0.04 + crease * 0.025, 20, 95),
     drag: clamp(paper.stats.drag + wing * 0.18 - nose * 0.12 + tail * 0.05, 10, 100),
   };
 
@@ -308,7 +542,12 @@ function recalcStats() {
 
 function renderAll() {
   renderPaperOptions();
+  renderFoldSteps();
+  renderCurrentStepControls();
+  renderFoldWorkbench();
   renderStatBars();
+  renderTrendSummary();
+  renderBuildAdvice();
   renderHeroStats();
   renderPlanePreview();
   renderLaunchBuildSummary();
@@ -322,24 +561,63 @@ function renderAll() {
 
 function renderLaunchBuildSummary() {
   const paper = getSelectedPaper();
+  const descriptors = {
+    crease: `骨架：${FOLD_STEPS[0].getValueText(state.parameters.crease)}`,
+    nose: `机头：${FOLD_STEPS[1].getValueText(state.parameters.nose)}`,
+    wing: `机翼：${FOLD_STEPS[2].getValueText(state.parameters.wing)}`,
+    tail: `尾翼：${FOLD_STEPS[3].getValueText(state.parameters.tail)}`,
+  };
   refs.launchBuildSummary.innerHTML = `
     <div class="summary-chip">
       <span>当前纸张</span>
       <strong>${paper.name}</strong>
     </div>
     <div class="summary-chip">
+      <span>折法摘要</span>
+      <strong>${descriptors.crease}</strong>
+    </div>
+    <div class="summary-chip">
       <span>机头 / 机翼</span>
-      <strong>${state.parameters.nose} / ${state.parameters.wing}</strong>
+      <strong>${descriptors.nose} / ${descriptors.wing}</strong>
     </div>
     <div class="summary-chip">
-      <span>尾翼角度</span>
-      <strong>${state.parameters.tail}</strong>
-    </div>
-    <div class="summary-chip">
-      <span>建议</span>
-      <strong>准备好后直接在中间飞行区完成发射。</strong>
+      <span>尾翼 / 建议</span>
+      <strong>${descriptors.tail}，准备好后直接在中间飞行区完成发射。</strong>
     </div>
   `;
+}
+
+function syncBackgroundMusic() {
+  if (!state.audioEnabled || !refs.musicPlayers) return;
+  const targetKey = state.activeWorkspace === "launch" ? "launch" : "builder";
+  const currentPlayer = refs.musicPlayers[targetKey];
+  if (state.currentMusicKey === targetKey && currentPlayer && !currentPlayer.paused && !document.hidden) return;
+
+  pauseAllMusic(targetKey);
+  state.currentMusicKey = targetKey;
+
+  const player = refs.musicPlayers[targetKey];
+  if (!player) return;
+  player.volume = MUSIC_VOLUME;
+  if (document.hidden) return;
+  safePlayAudio(player);
+}
+
+function pauseAllMusic(exceptKey = "") {
+  if (!refs.musicPlayers) return;
+  Object.entries(refs.musicPlayers).forEach(([key, player]) => {
+    if (!player || key === exceptKey) return;
+    player.pause();
+  });
+}
+
+function safePlayAudio(player) {
+  const playPromise = player.play();
+  if (playPromise && typeof playPromise.catch === "function") {
+    playPromise.catch(() => {
+      // Ignore autoplay/device playback restrictions.
+    });
+  }
 }
 
 function renderStatBars() {
@@ -369,6 +647,47 @@ function renderStatBars() {
     .join("");
 }
 
+function renderTrendSummary() {
+  const trends = [
+    {
+      label: "起飞速度",
+      value: state.stats.speed,
+      text: getTrendLabel(state.stats.speed, ["偏柔和", "比较顺", "偏快", "很猛"]),
+    },
+    {
+      label: "滑翔能力",
+      value: state.stats.glide,
+      text: getTrendLabel(state.stats.glide, ["偏短", "均衡", "偏强", "很能飘"]),
+    },
+    {
+      label: "飞行稳定",
+      value: state.stats.stability,
+      text: getTrendLabel(state.stats.stability, ["易晃动", "一般", "比较稳", "很稳"]),
+    },
+    {
+      label: "风险等级",
+      value: state.stats.risk,
+      text: getTrendLabel(100 - state.stats.risk, ["偏高", "有波动", "可控", "很低"]),
+    },
+  ];
+
+  refs.trendSummary.innerHTML = trends
+    .map(
+      (trend) => `
+        <div class="trend-card">
+          <span>${trend.label}</span>
+          <strong>${trend.text}</strong>
+          <small>${Math.round(trend.value)} / 100</small>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function renderBuildAdvice() {
+  refs.buildAdvice.textContent = getBuildAdvice();
+}
+
 function renderHeroStats() {
   const best = getBestRun()?.distance ?? 0;
   const last = state.personalRuns[0]?.distance ?? 0;
@@ -378,18 +697,58 @@ function renderHeroStats() {
 }
 
 function renderPlanePreview() {
-  const { nose, wing, tail } = state.parameters;
-  const body = refs.planePreview.querySelector(".plane-body");
-  const leftWing = refs.planePreview.querySelector(".plane-wing.left");
-  const rightWing = refs.planePreview.querySelector(".plane-wing.right");
-  const tailWing = refs.planePreview.querySelector(".plane-tail");
+  updatePlaneNode(refs.planePreview, false);
+  updatePlaneNode(refs.foldPlanePreview, true);
+}
 
+function updatePlaneNode(root, isWorkbench) {
+  if (!root) return;
+  const paper = getSelectedPaper();
+  const { crease, nose, wing, tail } = state.parameters;
+  const body = root.querySelector(".plane-body");
+  const leftWing = root.querySelector(".plane-wing.left");
+  const rightWing = root.querySelector(".plane-wing.right");
+  const tailWing = root.querySelector(".plane-tail");
+  if (!body || !leftWing || !rightWing || !tailWing) return;
+
+  root.style.setProperty("--plane-paper", paper.theme);
+  root.style.setProperty("--plane-shadow", isWorkbench ? "0 28px 34px rgba(42, 33, 21, 0.2)" : "0 16px 24px rgba(28, 38, 55, 0.14)");
   body.style.transform = `translateX(-50%) rotate(${12 + nose / 9}deg) scaleY(${0.9 + nose / 260})`;
+  body.style.height = `${112 + crease * 0.08}px`;
   leftWing.style.width = `${66 + wing}px`;
   rightWing.style.width = `${66 + wing}px`;
   leftWing.style.transform = `translateX(-100%) rotate(${-8 - tail / 9}deg)`;
   rightWing.style.transform = `rotate(${8 + tail / 9}deg)`;
-  tailWing.style.top = `${98 - tail / 6}px`;
+  tailWing.style.top = `${100 - tail / 6}px`;
+}
+
+function renderFoldWorkbench() {
+  const paper = getSelectedPaper();
+  const step = getCurrentFoldStep();
+  const progress = (state.activeFoldStep + 1) / FOLD_STEPS.length;
+  refs.foldWorkbench.dataset.step = step.key;
+  refs.foldWorkbench.style.setProperty("--paper-tone", paper.theme);
+  refs.foldWorkbench.style.setProperty("--fold-progress", progress.toFixed(2));
+  refs.foldWorkbench.style.setProperty("--crease-value", (state.parameters.crease / 100).toFixed(2));
+  refs.foldWorkbench.style.setProperty("--nose-value", (state.parameters.nose / 100).toFixed(2));
+  refs.foldWorkbench.style.setProperty("--wing-value", (state.parameters.wing / 100).toFixed(2));
+  refs.foldWorkbench.style.setProperty("--tail-value", (state.parameters.tail / 100).toFixed(2));
+}
+
+function getTrendLabel(value, labels) {
+  if (value < 28) return labels[0];
+  if (value < 52) return labels[1];
+  if (value < 76) return labels[2];
+  return labels[3];
+}
+
+function getBuildAdvice() {
+  const paper = getSelectedPaper();
+  if (state.stats.risk > 72) return `这架 ${paper.name} 机型现在偏激进，建议放飞时别拉太高，争取把前段速度吃满。`;
+  if (state.stats.glide > 76 && state.stats.stability < 54) return `这套折法很能飘，但中段也更容易吃风，放飞时更适合稳着送出去。`;
+  if (state.stats.stability > 72) return `当前骨架和机翼比较稳，适合连续刷分，先用中等力度找一条稳定航线。`;
+  if (state.parameters.tail > 68) return "尾翼偏高，适合给一点抬头空间，但不要把角度拉得太陡，不然容易中段失速。";
+  return `这是一架偏均衡的 ${paper.name} 飞机，先用中高力度试飞，再围绕机头和尾翼做微调。`;
 }
 
 function getFavoritePaper() {

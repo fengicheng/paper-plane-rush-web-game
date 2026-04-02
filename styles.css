@@ -283,21 +283,61 @@ input {
 
 .builder-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
+  grid-template-columns: 300px minmax(0, 1fr) 320px;
   gap: 16px;
   align-items: start;
 }
 
-.builder-controls {
+.builder-layout-redesign {
+  align-items: stretch;
+}
+
+.builder-sidebar,
+.builder-stage,
+.builder-visual {
   min-width: 0;
 }
 
-.builder-controls .field-block:first-child {
+.builder-sidebar,
+.builder-stage {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.builder-sidebar .field-block:first-child {
   margin-top: 0;
 }
 
+.builder-stage {
+  background:
+    radial-gradient(circle at top left, rgba(23, 88, 214, 0.08), transparent 34%),
+    linear-gradient(180deg, #fbfdff 0%, #f2f6fb 100%);
+}
+
+.builder-stage-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.stage-step-readout {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+}
+
+.stage-step-readout span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.stage-step-readout strong {
+  font-size: 18px;
+}
+
 .builder-visual {
-  min-width: 0;
   position: sticky;
   top: 18px;
 }
@@ -334,7 +374,7 @@ input {
   position: relative;
   width: 220px;
   height: 160px;
-  filter: drop-shadow(0 16px 24px rgba(28, 38, 55, 0.14));
+  filter: drop-shadow(var(--plane-shadow, 0 16px 24px rgba(28, 38, 55, 0.14)));
 }
 
 .plane-body,
@@ -342,7 +382,7 @@ input {
 .plane-tail {
   position: absolute;
   left: 50%;
-  background: linear-gradient(180deg, #ffffff, #e8edf2);
+  background: linear-gradient(180deg, #fffdfa, var(--plane-paper, #f1ebdf));
   border: 1px solid rgba(77, 98, 128, 0.18);
 }
 
@@ -576,6 +616,381 @@ input {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.5;
+}
+
+.fold-steps-detailed {
+  gap: 12px;
+}
+
+.fold-step-button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+.fold-step-button.completed {
+  border-style: solid;
+  border-color: rgba(20, 155, 118, 0.24);
+  background: rgba(20, 155, 118, 0.06);
+}
+
+.fold-step-button:hover {
+  transform: translateY(-1px);
+  border-color: rgba(23, 88, 214, 0.22);
+  box-shadow: 0 10px 22px rgba(20, 32, 51, 0.06);
+}
+
+.step-tip-card,
+.builder-advice-card {
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(245, 249, 253, 0.92));
+}
+
+.step-tip-card strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 17px;
+}
+
+.step-tip-card p,
+.builder-advice-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.fold-stage-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #fffdf9 0%, #f8fbff 100%);
+}
+
+.fold-stage-topline {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fold-stage-topline div {
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(23, 88, 214, 0.06);
+  border: 1px solid rgba(23, 88, 214, 0.08);
+}
+
+.fold-stage-topline span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.fold-stage-topline strong {
+  display: block;
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.fold-workbench {
+  position: relative;
+  min-height: 430px;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(108, 74, 41, 0.22);
+  background:
+    linear-gradient(90deg, rgba(124, 82, 43, 0.08) 0%, rgba(124, 82, 43, 0.02) 6%, rgba(124, 82, 43, 0.08) 12%, rgba(124, 82, 43, 0.02) 18%, rgba(124, 82, 43, 0.08) 24%, rgba(124, 82, 43, 0.03) 100%),
+    linear-gradient(135deg, #dfb88c 0%, #cb9867 38%, #b97e4f 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 248, 234, 0.3), inset 0 -18px 28px rgba(112, 66, 31, 0.14);
+}
+
+.fold-board-grid,
+.fold-board-shadow,
+.fold-sheet,
+.fold-guide,
+.fold-anchor,
+.fold-stage-plane {
+  position: absolute;
+}
+
+.fold-board-grid {
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.4;
+}
+
+.fold-board-shadow {
+  left: 50%;
+  top: 58%;
+  width: 460px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(54, 31, 12, 0.26), rgba(54, 31, 12, 0));
+  transform: translate(-50%, -50%);
+}
+
+.fold-sheet {
+  left: 50%;
+  top: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,0.98), var(--paper-tone, #f6efe2));
+  border: 1px solid rgba(124, 105, 82, 0.14);
+  box-shadow: 0 12px 26px rgba(69, 48, 21, 0.12);
+}
+
+.fold-sheet.base {
+  width: 360px;
+  height: 250px;
+  transform: translate(-50%, -50%) rotate(-2deg);
+  border-radius: 14px;
+}
+
+.fold-sheet.fold-left,
+.fold-sheet.fold-right {
+  width: 170px;
+  height: 240px;
+  top: 50%;
+  opacity: calc(0.18 + var(--crease-value, 0.5) * 0.5);
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.fold-sheet.fold-left {
+  transform: translate(calc(-50% - 82px + var(--crease-value, 0.5) * 36px), -50%) skewY(-4deg);
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);
+}
+
+.fold-sheet.fold-right {
+  transform: translate(calc(-50% + 82px - var(--crease-value, 0.5) * 36px), -50%) skewY(4deg);
+  clip-path: polygon(12% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.fold-guide {
+  border-radius: 999px;
+  background: rgba(255, 90, 54, 0.16);
+  opacity: 0.22;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.guide-center {
+  left: 50%;
+  top: 70px;
+  width: 3px;
+  height: 270px;
+  transform: translateX(-50%);
+}
+
+.guide-head {
+  left: 50%;
+  top: 108px;
+  width: 190px;
+  height: 3px;
+  transform: translateX(-50%) rotate(calc(-26deg + var(--nose-value, 0.5) * 18deg));
+}
+
+.guide-wing-left,
+.guide-wing-right {
+  top: 230px;
+  width: calc(120px + var(--wing-value, 0.5) * 100px);
+  height: 3px;
+}
+
+.guide-wing-left {
+  left: calc(50% - 10px);
+  transform-origin: right center;
+  transform: rotate(calc(-20deg - var(--tail-value, 0.5) * 14deg));
+}
+
+.guide-wing-right {
+  left: 50%;
+  transform-origin: left center;
+  transform: rotate(calc(20deg + var(--tail-value, 0.5) * 14deg));
+}
+
+.guide-tail {
+  left: 50%;
+  top: 286px;
+  width: 90px;
+  height: 3px;
+  transform: translateX(-50%) rotate(calc(var(--tail-value, 0.5) * 16deg));
+}
+
+.fold-anchor {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(19, 32, 51, 0.72);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.anchor-head {
+  top: 74px;
+  right: 28px;
+}
+
+.anchor-wing {
+  left: 28px;
+  top: 198px;
+}
+
+.anchor-tail {
+  right: 36px;
+  bottom: 72px;
+}
+
+.fold-workbench .fold-stage-plane {
+  left: 50%;
+  top: 50%;
+  width: 340px;
+  height: 240px;
+  transform: translate(-50%, -50%) scale(calc(0.82 + var(--fold-progress, 0.5) * 0.32));
+  transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.fold-workbench[data-step="crease"] .guide-center,
+.fold-workbench[data-step="nose"] .guide-head,
+.fold-workbench[data-step="wing"] .guide-wing-left,
+.fold-workbench[data-step="wing"] .guide-wing-right,
+.fold-workbench[data-step="tail"] .guide-tail {
+  opacity: 1;
+}
+
+.fold-workbench[data-step="crease"] .fold-stage-plane {
+  opacity: 0.62;
+}
+
+.fold-workbench[data-step="nose"] .fold-stage-plane {
+  opacity: 0.76;
+}
+
+.fold-workbench[data-step="wing"] .fold-stage-plane,
+.fold-workbench[data-step="tail"] .fold-stage-plane {
+  opacity: 1;
+}
+
+.fold-control-card {
+  padding: 18px;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(244,248,252,0.94));
+}
+
+.fold-control-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.fold-control-head h3 {
+  margin: 6px 0 0;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.step-value-pill {
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(23, 88, 214, 0.1);
+  color: var(--blue);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.step-description {
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.step-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.step-choice {
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.step-choice.active {
+  border-color: rgba(255, 90, 54, 0.32);
+  background: rgba(255, 90, 54, 0.08);
+  color: var(--accent-deep);
+}
+
+.step-range-wrap {
+  display: grid;
+  grid-template-columns: 60px minmax(0, 1fr) 60px;
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.step-range-wrap span {
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.step-range-wrap input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.step-nav button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.trend-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.trend-card {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.trend-card span,
+.trend-card small {
+  display: block;
+  color: var(--muted);
+}
+
+.trend-card strong {
+  display: block;
+  margin: 8px 0 6px;
+  font-size: 18px;
 }
 
 .flight-stage {
@@ -1053,6 +1468,10 @@ input {
     grid-template-columns: 240px minmax(0, 1fr);
   }
 
+  .builder-layout {
+    grid-template-columns: 280px minmax(0, 1fr) 300px;
+  }
+
   .board-panel {
     grid-column: 1 / -1;
   }
@@ -1071,6 +1490,11 @@ input {
 
   .builder-visual {
     position: static;
+  }
+
+  .fold-stage-topline,
+  .trend-summary {
+    grid-template-columns: 1fr;
   }
 
   .game-topbar {
@@ -1102,6 +1526,12 @@ input {
   .builder-visual-head {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .fold-control-head,
+  .builder-stage-head {
+    flex-direction: column;
+    align-items: start;
   }
 
   .stage-launch,
