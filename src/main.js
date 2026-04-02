@@ -852,7 +852,7 @@ function drawIdleScene() {
   drawBackdrop(ctx, cameraX, cameraY);
   drawDistanceMarkers(ctx, cameraX, cameraY, 0);
   drawRunway(ctx, cameraX, cameraY);
-  drawPlane(ctx, focusX - cameraX, focusY - cameraY, -18, getSelectedPaper().theme);
+  drawPlane(ctx, focusX - cameraX, focusY - cameraY, -18, getSelectedPaper().theme, true);
 }
 
 function drawScene(distance, height, landed = false) {
@@ -884,7 +884,7 @@ function drawScene(distance, height, landed = false) {
 
   if (jet) {
     const planeY = landed ? getWorldGroundY() - cameraY - 2 : jet.y - cameraY;
-    drawPlane(ctx, jet.x - cameraX, planeY, jet.rotation, getSelectedPaper().theme);
+    drawPlane(ctx, jet.x - cameraX, planeY, jet.rotation, getSelectedPaper().theme, true);
   }
 
   drawHudCloud(ctx, distance, height);
@@ -983,13 +983,23 @@ function drawCloud(ctx, x, y, size) {
   ctx.fill();
 }
 
-function drawPlane(ctx, x, y, rotation, color) {
+function drawPlane(ctx, x, y, rotation, color, emphasis = false) {
   ctx.save();
   ctx.translate(x, y);
   ctx.rotate((rotation * Math.PI) / 180);
+  if (emphasis) {
+    ctx.save();
+    ctx.fillStyle = "rgba(255, 90, 54, 0.18)";
+    ctx.beginPath();
+    ctx.arc(0, 0, 34, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    ctx.scale(1.18, 1.18);
+  }
+
   ctx.fillStyle = color;
-  ctx.strokeStyle = "rgba(118, 96, 68, 0.35)";
-  ctx.lineWidth = 2;
+  ctx.strokeStyle = emphasis ? "rgba(39, 56, 76, 0.86)" : "rgba(118, 96, 68, 0.35)";
+  ctx.lineWidth = emphasis ? 2.6 : 2;
 
   ctx.beginPath();
   ctx.moveTo(0, -32);
@@ -1014,6 +1024,18 @@ function drawPlane(ctx, x, y, rotation, color) {
   ctx.lineTo(0, 20 - state.parameters.tail * 0.12);
   ctx.lineTo(14, 16);
   ctx.stroke();
+
+  if (emphasis) {
+    ctx.restore();
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.68)";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.beginPath();
+    ctx.arc(0, 0, 30, 0, Math.PI * 2);
+    ctx.stroke();
+  }
   ctx.restore();
 }
 
