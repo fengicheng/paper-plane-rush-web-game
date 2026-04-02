@@ -139,8 +139,11 @@ function cacheRefs() {
   refs.resultDistance = document.getElementById("resultDistance");
   refs.resultSummary = document.getElementById("resultSummary");
   refs.resultTags = document.getElementById("resultTags");
-  refs.relaunchBtn = document.getElementById("relaunchBtn");
-  refs.randomizeBtn = document.getElementById("randomizeBtn");
+  refs.resultModal = document.getElementById("resultModal");
+  refs.resultModalDistance = document.getElementById("resultModalDistance");
+  refs.resultModalSummary = document.getElementById("resultModalSummary");
+  refs.modalRetryBtn = document.getElementById("modalRetryBtn");
+  refs.modalTuneBtn = document.getElementById("modalTuneBtn");
   refs.globalTab = document.getElementById("globalTab");
   refs.personalTab = document.getElementById("personalTab");
   refs.globalBoard = document.getElementById("globalBoard");
@@ -163,8 +166,8 @@ function bindEvents() {
   refs.goLaunchBtn.addEventListener("click", () => switchWorkspace("launch"));
   refs.goBuilderBtn.addEventListener("click", () => switchWorkspace("builder"));
   refs.nicknameInput.addEventListener("change", handleNicknameChange);
-  refs.relaunchBtn.addEventListener("click", resetForNextRun);
-  refs.randomizeBtn.addEventListener("click", randomizeBuild);
+  refs.modalRetryBtn.addEventListener("click", retryFromModal);
+  refs.modalTuneBtn.addEventListener("click", tuneFromModal);
   refs.globalTab.addEventListener("click", () => switchBoard("global"));
   refs.personalTab.addEventListener("click", () => switchBoard("personal"));
 
@@ -182,6 +185,7 @@ function bindEvents() {
 function startGame() {
   refs.landingScreen.classList.add("hidden");
   refs.gameScreen.classList.remove("hidden");
+  hideResultModal();
   switchWorkspace("builder");
   drawIdleScene();
 }
@@ -190,6 +194,9 @@ function switchWorkspace(nextWorkspace) {
   state.activeWorkspace = nextWorkspace;
   refs.builderPage.classList.toggle("hidden", nextWorkspace !== "builder");
   refs.launchPage.classList.toggle("hidden", nextWorkspace !== "launch");
+  if (nextWorkspace !== "launch") {
+    hideResultModal();
+  }
   if (nextWorkspace === "launch") {
     drawIdleScene();
   }
@@ -555,6 +562,7 @@ function startSimulation() {
   state.sim.windText = "平稳";
   state.sim.startTime = performance.now();
   state.sim.lastTime = performance.now();
+  const groundY = getWorldGroundY();
 
   const frame = (time) => {
     if (!state.sim.running) return;
@@ -600,7 +608,8 @@ function startSimulation() {
     refs.windReadout.textContent = state.sim.windText;
     drawScene(distance, height);
 
-    if (jet.y >= refs.canvas.height - 92 || jet.x >= WORLD_WIDTH - 80 || jet.vx <= 0.6) {
+    if (jet.y >= groundY) {
+      jet.y = groundY;
       finishSimulation(distance, {
         releaseFactor,
         launchStability,
@@ -627,9 +636,10 @@ function finishSimulation(distance, meta) {
   renderAll();
   refs.throwHint.textContent = "可以再试一局，或者调参后继续冲榜";
   refs.liveDistance.textContent = `${finalDistance.toFixed(1)} m`;
-  refs.liveHeight.textContent = `${state.sim.maxHeight.toFixed(1)} m`;
+  refs.liveHeight.textContent = "0.0 m";
   refs.windReadout.textContent = state.sim.windText;
-  drawScene(distance, state.sim.maxHeight, true);
+  drawScene(finalDistance, 0, true);
+  showResultModal(entry);
 }
 
 function buildResult(distance, meta) {
@@ -700,6 +710,28 @@ function renderResultSummary(entry) {
   refs.resultDistance.textContent = `${entry.distance.toFixed(1)} m`;
   refs.resultSummary.textContent = entry.summary;
   refs.resultTags.innerHTML = entry.tags.map((tag) => `<span class="result-tag">${tag}</span>`).join("");
+}
+
+function showResultModal(entry) {
+  refs.resultModalDistance.textContent = `${entry.distance.toFixed(1)} m`;
+  refs.resultModalSummary.textContent = entry.summary;
+  refs.resultModal.classList.remove("hidden");
+}
+
+function hideResultModal() {
+  refs.resultModal.classList.add("hidden");
+}
+
+function retryFromModal() {
+  hideResultModal();
+  switchWorkspace("launch");
+  resetForNextRun();
+}
+
+function tuneFromModal() {
+  hideResultModal();
+  resetForNextRun();
+  switchWorkspace("builder");
 }
 
 function renderBoards() {
@@ -815,19 +847,9 @@ function resetForNextRun() {
   refs.liveDistance.textContent = "0.0 m";
   refs.liveHeight.textContent = "0.0 m";
   refs.windReadout.textContent = "平稳";
+  hideResultModal();
   hideAimVisual();
   drawIdleScene();
-}
-
-function randomizeBuild() {
-  state.selectedPaperId = papers[Math.floor(Math.random() * papers.length)].id;
-  parameters.forEach((item) => {
-    state.parameters[item.key] = Math.round(22 + Math.random() * 64);
-  });
-  renderParameterControls();
-  recalcStats();
-  renderAll();
-  resetForNextRun();
 }
 
 function getNickname() {

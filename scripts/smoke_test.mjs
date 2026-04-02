@@ -87,12 +87,23 @@ try {
     const text = document.querySelector("#resultDistance")?.textContent ?? "";
     return text !== "0.0 m";
   }, null, { timeout: 25000 });
+  await page.waitForSelector("#resultModal:not(.hidden)");
 
   const resultDistanceText = await page.locator("#resultDistance").textContent();
   const resultDistance = Number.parseFloat(resultDistanceText ?? "0");
+  const modalDistanceText = await page.locator("#resultModalDistance").textContent();
+  const modalVisible = await page.locator("#resultModal").evaluate((node) => !node.classList.contains("hidden"));
 
   if (!Number.isFinite(resultDistance) || resultDistance <= 0) {
     throw new Error(`Expected a positive result distance, got "${resultDistanceText}"`);
+  }
+
+  if (!modalVisible) {
+    throw new Error("Expected result modal to be visible after flight.");
+  }
+
+  if (modalDistanceText !== resultDistanceText) {
+    throw new Error(`Expected modal distance "${modalDistanceText}" to match result distance "${resultDistanceText}"`);
   }
 
   if (!angleText || angleText === "28°") {
@@ -116,6 +127,7 @@ try {
         maxAngleText,
         angleText,
         resultDistance,
+        modalVisible,
       },
       null,
       2

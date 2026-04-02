@@ -240,9 +240,17 @@
                     <p id="resultSummary">调好参数后发射，看看这架纸飞机到底能飞多远。</p>
                   </div>
                   <div id="resultTags" class="result-tags"></div>
-                  <div class="result-actions">
-                    <button id="relaunchBtn" class="primary-btn" type="button">再来一局</button>
-                    <button id="randomizeBtn" class="ghost-btn" type="button">随机试机</button>
+                </div>
+
+                <div id="resultModal" class="result-modal hidden" role="dialog" aria-modal="true" aria-labelledby="resultModalDistance">
+                  <div class="result-modal-card">
+                    <span class="step-tag">本次成绩</span>
+                    <strong id="resultModalDistance" class="result-modal-distance">0.0 m</strong>
+                    <p id="resultModalSummary" class="result-modal-summary">看看这次飞行结果，再决定是继续试飞还是返回调机。</p>
+                    <div class="result-modal-actions">
+                      <button id="modalRetryBtn" class="primary-btn" type="button">再次尝试</button>
+                      <button id="modalTuneBtn" class="ghost-btn" type="button">调整飞机</button>
+                    </div>
                   </div>
                 </div>
               </div>
