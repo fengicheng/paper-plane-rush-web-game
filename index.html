@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>纸飞机冲榜</title>
+    <meta
+      name="description"
+      content="通过选择纸张、调整折纸参数和投掷时机，让纸飞机飞出更远距离，冲击排行榜。"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Web Game MVP</p>
+          <h1>纸飞机冲榜</h1>
+          <p class="hero-text">
+            半拟真折纸 + 物理投掷 + 成绩竞争。选纸、调结构、抓住最佳释放区，把纸飞机扔到更远的地方。
+          </p>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <span>个人最佳</span>
+            <strong id="bestDistance">0.0 m</strong>
+          </div>
+          <div class="stat-card">
+            <span>最近成绩</span>
+            <strong id="lastDistance">-</strong>
+          </div>
+          <div class="stat-card">
+            <span>常用纸张</span>
+            <strong id="favoritePaper">普通打印纸</strong>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel controls-panel">
+          <div class="section-header">
+            <span class="step-tag">STEP 1</span>
+            <h2>折纸工坊</h2>
+          </div>
+
+          <div class="field-block">
+            <label for="nicknameInput">玩家昵称</label>
+            <input id="nicknameInput" type="text" maxlength="12" placeholder="输入昵称上榜" />
+          </div>
+
+          <div class="field-block">
+            <label>纸张选择</label>
+            <div id="paperOptions" class="paper-grid"></div>
+          </div>
+
+          <div class="field-block">
+            <div class="fold-steps">
+              <div class="fold-step active">
+                <span>1</span>
+                <div>
+                  <strong>对折</strong>
+                  <p>生成基础对称度并建立骨架</p>
+                </div>
+              </div>
+              <div class="fold-step">
+                <span>2</span>
+                <div>
+                  <strong>折机头</strong>
+                  <p>头更尖，飞得更快</p>
+                </div>
+              </div>
+              <div class="fold-step">
+                <span>3</span>
+                <div>
+                  <strong>折机翼</strong>
+                  <p>翼更宽，飞得更久</p>
+                </div>
+              </div>
+              <div class="fold-step">
+                <span>4</span>
+                <div>
+                  <strong>调尾翼</strong>
+                  <p>决定抬头还是下坠</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field-block">
+            <div id="parameterControls" class="slider-group"></div>
+          </div>
+
+          <div class="field-block">
+            <div class="airframe-card">
+              <div class="airframe-preview">
+                <div id="planePreview" class="plane-preview">
+                  <div class="plane-body"></div>
+                  <div class="plane-wing left"></div>
+                  <div class="plane-wing right"></div>
+                  <div class="plane-tail"></div>
+                </div>
+              </div>
+              <div class="airframe-readout">
+                <h3>飞行预估</h3>
+                <div id="statBars" class="stat-bars"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel arena-panel">
+          <div class="arena-top">
+            <div class="section-header">
+              <span class="step-tag warm">STEP 2</span>
+              <h2>投掷与飞行</h2>
+            </div>
+            <div class="run-metrics">
+              <div>
+                <span>当前距离</span>
+                <strong id="liveDistance">0.0 m</strong>
+              </div>
+              <div>
+                <span>当前高度</span>
+                <strong id="liveHeight">0.0 m</strong>
+              </div>
+              <div>
+                <span>风扰动</span>
+                <strong id="windReadout">平稳</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="flight-stage">
+            <canvas id="flightCanvas" width="1200" height="700"></canvas>
+            <div id="introOverlay" class="intro-overlay">
+              <p class="intro-title">准备首飞</p>
+              <p>按住发射台蓄力，向上拖动控制角度，在高亮释放区松手会更稳。</p>
+            </div>
+          </div>
+
+          <div class="launch-deck">
+            <div class="launch-card">
+              <div class="launch-title">
+                <h3>发射台</h3>
+                <span id="throwHint">按住开始蓄力，向上拖动调整角度</span>
+              </div>
+              <div id="launchPad" class="launch-pad">
+                <div class="drag-guide"></div>
+                <div class="drag-arrow"></div>
+                <div class="pad-center">按住并向上拖动</div>
+              </div>
+              <div class="throw-readout">
+                <div>
+                  <span>力度</span>
+                  <strong id="powerReadout">0%</strong>
+                </div>
+                <div>
+                  <span>角度</span>
+                  <strong id="angleReadout">28°</strong>
+                </div>
+                <div>
+                  <span>释放稳定</span>
+                  <strong id="releaseReadout">未释放</strong>
+                </div>
+              </div>
+              <div class="power-meter-shell">
+                <div class="sweet-spot"></div>
+                <div id="powerMeter" class="power-meter"></div>
+              </div>
+            </div>
+
+            <div class="result-card">
+              <div class="section-header tight">
+                <span class="step-tag cool">STEP 3</span>
+                <h2>结算面板</h2>
+              </div>
+              <div class="result-main">
+                <strong id="resultDistance">0.0 m</strong>
+                <p id="resultSummary">调好参数后发射，看看这架纸飞机到底能飞多远。</p>
+              </div>
+              <div id="resultTags" class="result-tags"></div>
+              <div class="result-actions">
+                <button id="relaunchBtn" class="primary-btn" type="button">再来一局</button>
+                <button id="randomizeBtn" class="ghost-btn" type="button">随机试机</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel board-panel">
+          <div class="section-header">
+            <span class="step-tag cool">STEP 4</span>
+            <h2>排行榜</h2>
+          </div>
+          <div class="tabs">
+            <button id="globalTab" class="tab-btn active" type="button">总榜</button>
+            <button id="personalTab" class="tab-btn" type="button">个人记录</button>
+          </div>
+          <div id="globalBoard" class="board-view"></div>
+          <div id="personalBoard" class="board-view hidden"></div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+  </body>
+  </html>
