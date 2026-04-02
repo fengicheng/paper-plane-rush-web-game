@@ -845,12 +845,14 @@ function getBestRun() {
 function drawIdleScene() {
   const ctx = refs.ctx;
   ctx.clearRect(0, 0, refs.canvas.width, refs.canvas.height);
-  const cameraX = 0;
-  const cameraY = 0;
+  const focusX = LAUNCH_X;
+  const focusY = getWorldGroundY() - 24;
+  const cameraX = getCameraX(focusX);
+  const cameraY = getCameraY(focusY);
   drawBackdrop(ctx, cameraX, cameraY);
   drawDistanceMarkers(ctx, cameraX, cameraY, 0);
   drawRunway(ctx, cameraX, cameraY);
-  drawPlane(ctx, 130, getWorldGroundY() - cameraY - 38, -18, getSelectedPaper().theme);
+  drawPlane(ctx, focusX - cameraX, focusY - cameraY, -18, getSelectedPaper().theme);
 }
 
 function drawScene(distance, height, landed = false) {
@@ -889,7 +891,7 @@ function drawScene(distance, height, landed = false) {
 }
 
 function getCameraX(focusX) {
-  return clamp(focusX - refs.canvas.width * 0.32, 0, WORLD_WIDTH - refs.canvas.width);
+  return focusX - refs.canvas.width * 0.5;
 }
 
 function getWorldGroundY() {
@@ -897,9 +899,7 @@ function getWorldGroundY() {
 }
 
 function getCameraY(focusY) {
-  const targetY = focusY - refs.canvas.height * 0.45;
-  const maxCameraY = getWorldGroundY() - refs.canvas.height + 150;
-  return clamp(targetY, CAMERA_MIN_Y, maxCameraY);
+  return focusY - refs.canvas.height * 0.5;
 }
 
 function drawBackdrop(ctx, cameraX, cameraY) {
