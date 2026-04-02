@@ -44,7 +44,7 @@ const parameters = [
   {
     key: "symmetry",
     name: "左右对称度",
-    description: "对称更稳，偏航更少，更容易稳定出分。",
+    description: "过低会偏航，适度微调最稳；拉满会更死板，上限反而下降。",
     value: 76,
   },
   {
@@ -69,6 +69,7 @@ const HEIGHT_SCALE = 40;
 const SIMULATION_SPEED = 0.42;
 const LAUNCH_X = 42;
 const WORLD_WIDTH = 4200;
+const CAMERA_MIN_Y = -260;
 
 const state = {
   selectedPaperId: "default",
@@ -289,17 +290,21 @@ function renderParameterControls() {
 function recalcStats() {
   const paper = getSelectedPaper();
   const { nose, wing, symmetry, tail } = state.parameters;
+  const trimAssist = clamp(18 - Math.abs(symmetry - 68), 0, 18);
+  const symmetryStability = clamp(18 - Math.abs(symmetry - 78) * 0.36, 0, 18);
+  const overAlignPenalty = Math.max(0, symmetry - 88);
+  const underAlignPenalty = Math.max(0, 58 - symmetry);
 
   const stats = {
     speed: clamp(paper.stats.speed + nose * 0.26 - wing * 0.14 - tail * 0.03, 20, 100),
-    lift: clamp(paper.stats.lift + wing * 0.24 + tail * 0.1 - paper.stats.weight * 0.08, 16, 100),
-    stability: clamp(paper.stats.stability + symmetry * 0.22 - nose * 0.12 + tail * 0.04 - Math.abs(50 - wing) * 0.18, 12, 100),
+    lift: clamp(paper.stats.lift + wing * 0.24 + tail * 0.1 - paper.stats.weight * 0.08 + trimAssist * 0.18 - overAlignPenalty * 0.24, 16, 100),
+    stability: clamp(paper.stats.stability + symmetryStability - nose * 0.12 + tail * 0.04 - Math.abs(50 - wing) * 0.18, 12, 100),
     weight: clamp(paper.stats.weight + nose * 0.05 + (100 - wing) * 0.04, 20, 95),
     drag: clamp(paper.stats.drag + wing * 0.18 - nose * 0.12 + tail * 0.05, 10, 100),
   };
 
   stats.glide = clamp((stats.lift * 0.58 + stats.stability * 0.42) - stats.weight * 0.16, 10, 100);
-  stats.risk = clamp((nose * 0.55 + Math.max(0, tail - 58) * 0.8 + Math.max(0, 42 - symmetry) * 1.15) / 2, 0, 100);
+  stats.risk = clamp((nose * 0.55 + Math.max(0, tail - 58) * 0.8 + underAlignPenalty * 0.9 + overAlignPenalty * 0.85) / 2, 0, 100);
   state.stats = stats;
 }
 
@@ -672,6 +677,7 @@ function buildResultSummary(distance, reasons) {
   if (distance > best) return `刷新个人最佳，距离榜首还差 ${(lead - distance).toFixed(1)} m。`;
   if (reasons.includes("失速明显")) return "这架飞机前段抬头不错，但尾翼过高导致中段失速。";
   if (reasons.includes("偏航损失")) return "对称度略差，飞机在中段出现了明显偏航。";
+  if (reasons.includes("过度对称")) return "机体过于追求满对称，飞得很稳，但滑翔上限被压住了。";
   return "这把已经有不错雏形，再优化参数或释放时机还有明显提升空间。";
 }
 
@@ -681,6 +687,7 @@ function getRunReasons(distance, launchStability, releaseFactor) {
   if (state.parameters.tail > 72) reasons.push("失速明显");
   if (state.parameters.nose > 78 && state.parameters.tail < 42) reasons.push("前段俯冲");
   if (state.parameters.symmetry < 56 || launchStability < 0.62) reasons.push("偏航损失");
+  if (state.parameters.symmetry > 90) reasons.push("过度对称");
   if (releaseFactor > 0.84) reasons.push("释放稳");
   if (state.stats.stability > 72) reasons.push("机体稳定");
   if (state.stats.lift > 78) reasons.push("滑翔表现强");
@@ -851,10 +858,11 @@ function drawIdleScene() {
   const ctx = refs.ctx;
   ctx.clearRect(0, 0, refs.canvas.width, refs.canvas.height);
   const cameraX = 0;
-  drawBackdrop(ctx, cameraX);
-  drawDistanceMarkers(ctx, cameraX, 0);
-  drawRunway(ctx, cameraX);
-  drawPlane(ctx, 130, refs.canvas.height - 130, -18, getSelectedPaper().theme);
+  const cameraY = 0;
+  drawBackdrop(ctx, cameraX, cameraY);
+  drawDistanceMarkers(ctx, cameraX, cameraY, 0);
+  drawRunway(ctx, cameraX, cameraY);
+  drawPlane(ctx, 130, getWorldGroundY() - cameraY - 38, -18, getSelectedPaper().theme);
 }
 
 function drawScene(distance, height, landed = false) {
@@ -862,10 +870,12 @@ function drawScene(distance, height, landed = false) {
   ctx.clearRect(0, 0, refs.canvas.width, refs.canvas.height);
   const jet = state.sim.current;
   const focusX = jet ? jet.x : LAUNCH_X;
+  const focusY = jet ? jet.y : getWorldGroundY() - 24;
   const cameraX = getCameraX(focusX);
-  drawBackdrop(ctx, cameraX);
-  drawDistanceMarkers(ctx, cameraX, distance);
-  drawRunway(ctx, cameraX);
+  const cameraY = getCameraY(focusY);
+  drawBackdrop(ctx, cameraX, cameraY);
+  drawDistanceMarkers(ctx, cameraX, cameraY, distance);
+  drawRunway(ctx, cameraX, cameraY);
 
   if (state.sim.points.length > 1) {
     ctx.save();
@@ -874,15 +884,17 @@ function drawScene(distance, height, landed = false) {
     ctx.beginPath();
     state.sim.points.forEach((point, index) => {
       const screenX = point.x - cameraX;
-      if (index === 0) ctx.moveTo(screenX, point.y);
-      else ctx.lineTo(screenX, point.y);
+      const screenY = point.y - cameraY;
+      if (index === 0) ctx.moveTo(screenX, screenY);
+      else ctx.lineTo(screenX, screenY);
     });
     ctx.stroke();
     ctx.restore();
   }
 
   if (jet) {
-    drawPlane(ctx, jet.x - cameraX, landed ? refs.canvas.height - 94 : jet.y, jet.rotation, getSelectedPaper().theme);
+    const planeY = landed ? getWorldGroundY() - cameraY - 2 : jet.y - cameraY;
+    drawPlane(ctx, jet.x - cameraX, planeY, jet.rotation, getSelectedPaper().theme);
   }
 
   drawHudCloud(ctx, distance, height);
@@ -892,7 +904,17 @@ function getCameraX(focusX) {
   return clamp(focusX - refs.canvas.width * 0.32, 0, WORLD_WIDTH - refs.canvas.width);
 }
 
-function drawBackdrop(ctx, cameraX) {
+function getWorldGroundY() {
+  return refs.canvas.height - 92;
+}
+
+function getCameraY(focusY) {
+  const targetY = focusY - refs.canvas.height * 0.45;
+  const maxCameraY = getWorldGroundY() - refs.canvas.height + 150;
+  return clamp(targetY, CAMERA_MIN_Y, maxCameraY);
+}
+
+function drawBackdrop(ctx, cameraX, cameraY) {
   const gradient = ctx.createLinearGradient(0, 0, 0, refs.canvas.height);
   gradient.addColorStop(0, "#bfe0f3");
   gradient.addColorStop(0.55, "#d8eef8");
@@ -903,42 +925,45 @@ function drawBackdrop(ctx, cameraX) {
 
   ctx.fillStyle = "rgba(255,255,255,0.38)";
   const parallax = cameraX * 0.18;
-  drawCloud(ctx, 120 - parallax, 98, 58);
-  drawCloud(ctx, 340 - parallax, 160, 44);
-  drawCloud(ctx, 840 - parallax, 124, 68);
-  drawCloud(ctx, 1040 - parallax, 212, 52);
-  drawCloud(ctx, 1440 - parallax, 120, 48);
+  const cloudLift = cameraY * 0.2;
+  drawCloud(ctx, 120 - parallax, 98 - cloudLift, 58);
+  drawCloud(ctx, 340 - parallax, 160 - cloudLift, 44);
+  drawCloud(ctx, 840 - parallax, 124 - cloudLift, 68);
+  drawCloud(ctx, 1040 - parallax, 212 - cloudLift, 52);
+  drawCloud(ctx, 1440 - parallax, 120 - cloudLift, 48);
 }
 
-function drawRunway(ctx, cameraX) {
+function drawRunway(ctx, cameraX, cameraY) {
   ctx.save();
+  const groundY = getWorldGroundY() - cameraY;
   ctx.fillStyle = "#97bc72";
-  ctx.fillRect(0, refs.canvas.height - 120, refs.canvas.width, 120);
+  ctx.fillRect(0, groundY - 28, refs.canvas.width, refs.canvas.height - groundY + 28);
   ctx.fillStyle = "rgba(53, 98, 56, 0.18)";
   const stripeOffset = -((cameraX * 0.35) % 70);
   for (let i = stripeOffset; i < refs.canvas.width + 70; i += 70) {
-    ctx.fillRect(i, refs.canvas.height - 92, 26, 36);
+    ctx.fillRect(i, groundY, 26, 36);
   }
   ctx.fillStyle = "#d1b38c";
-  ctx.fillRect(0, refs.canvas.height - 74, refs.canvas.width, 12);
+  ctx.fillRect(0, groundY + 18, refs.canvas.width, 12);
   ctx.restore();
 }
 
-function drawDistanceMarkers(ctx, cameraX, distance) {
+function drawDistanceMarkers(ctx, cameraX, cameraY, distance) {
   ctx.save();
   ctx.strokeStyle = "rgba(47, 111, 161, 0.16)";
   ctx.fillStyle = "rgba(46, 36, 28, 0.52)";
   ctx.font = "18px Segoe UI";
+  const groundY = getWorldGroundY() - cameraY;
   const maxMarker = Math.floor((WORLD_WIDTH - LAUNCH_X) / DISTANCE_SCALE / 10) * 10;
   for (let meters = 0; meters <= maxMarker; meters += 10) {
     const worldX = LAUNCH_X + meters * DISTANCE_SCALE;
     const x = worldX - cameraX;
     if (x < -80 || x > refs.canvas.width + 80) continue;
     ctx.beginPath();
-    ctx.moveTo(x, refs.canvas.height - 120);
-    ctx.lineTo(x, refs.canvas.height - 84);
+    ctx.moveTo(x, groundY - 28);
+    ctx.lineTo(x, groundY + 8);
     ctx.stroke();
-    ctx.fillText(`${meters}m`, x - 18, refs.canvas.height - 52);
+    ctx.fillText(`${meters}m`, x - 18, groundY + 40);
   }
   ctx.font = "bold 28px Segoe UI";
   ctx.fillStyle = "rgba(255,255,255,0.9)";
