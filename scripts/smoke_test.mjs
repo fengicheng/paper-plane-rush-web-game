@@ -60,8 +60,8 @@ try {
     throw new Error(`Expected 3 paper options, received ${paperCount}`);
   }
 
-  if (sliderCount !== 4) {
-    throw new Error(`Expected 4 parameter sliders, received ${sliderCount}`);
+  if (sliderCount !== 3) {
+    throw new Error(`Expected 3 parameter sliders, received ${sliderCount}`);
   }
 
   await page.fill("#nicknameInput", "SmokePilot");

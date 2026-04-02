@@ -42,12 +42,6 @@ const parameters = [
     value: 54,
   },
   {
-    key: "symmetry",
-    name: "左右对称度",
-    description: "过低会偏航，适度微调最稳；拉满会更死板，上限反而下降。",
-    value: 76,
-  },
-  {
     key: "tail",
     name: "尾翼上翘角度",
     description: "决定抬头还是下坠，过高会有失速风险。",
@@ -289,22 +283,19 @@ function renderParameterControls() {
 
 function recalcStats() {
   const paper = getSelectedPaper();
-  const { nose, wing, symmetry, tail } = state.parameters;
-  const trimAssist = clamp(18 - Math.abs(symmetry - 68), 0, 18);
-  const symmetryStability = clamp(18 - Math.abs(symmetry - 78) * 0.36, 0, 18);
-  const overAlignPenalty = Math.max(0, symmetry - 88);
-  const underAlignPenalty = Math.max(0, 58 - symmetry);
+  const { nose, wing, tail } = state.parameters;
+  const wingBalance = clamp(18 - Math.abs(54 - wing) * 0.36, 0, 18);
 
   const stats = {
     speed: clamp(paper.stats.speed + nose * 0.26 - wing * 0.14 - tail * 0.03, 20, 100),
-    lift: clamp(paper.stats.lift + wing * 0.24 + tail * 0.1 - paper.stats.weight * 0.08 + trimAssist * 0.18 - overAlignPenalty * 0.24, 16, 100),
-    stability: clamp(paper.stats.stability + symmetryStability - nose * 0.12 + tail * 0.04 - Math.abs(50 - wing) * 0.18, 12, 100),
+    lift: clamp(paper.stats.lift + wing * 0.24 + tail * 0.1 - paper.stats.weight * 0.08 + wingBalance * 0.14, 16, 100),
+    stability: clamp(paper.stats.stability + wingBalance - nose * 0.12 + tail * 0.04 - Math.abs(50 - wing) * 0.18, 12, 100),
     weight: clamp(paper.stats.weight + nose * 0.05 + (100 - wing) * 0.04, 20, 95),
     drag: clamp(paper.stats.drag + wing * 0.18 - nose * 0.12 + tail * 0.05, 10, 100),
   };
 
   stats.glide = clamp((stats.lift * 0.58 + stats.stability * 0.42) - stats.weight * 0.16, 10, 100);
-  stats.risk = clamp((nose * 0.55 + Math.max(0, tail - 58) * 0.8 + underAlignPenalty * 0.9 + overAlignPenalty * 0.85) / 2, 0, 100);
+  stats.risk = clamp((nose * 0.55 + Math.max(0, tail - 58) * 0.8 + Math.abs(50 - wing) * 0.4) / 2, 0, 100);
   state.stats = stats;
 }
 
@@ -334,8 +325,8 @@ function renderLaunchBuildSummary() {
       <strong>${state.parameters.nose} / ${state.parameters.wing}</strong>
     </div>
     <div class="summary-chip">
-      <span>对称 / 尾翼</span>
-      <strong>${state.parameters.symmetry} / ${state.parameters.tail}</strong>
+      <span>尾翼角度</span>
+      <strong>${state.parameters.tail}</strong>
     </div>
     <div class="summary-chip">
       <span>建议</span>
@@ -380,7 +371,7 @@ function renderHeroStats() {
 }
 
 function renderPlanePreview() {
-  const { nose, wing, tail, symmetry } = state.parameters;
+  const { nose, wing, tail } = state.parameters;
   const body = refs.planePreview.querySelector(".plane-body");
   const leftWing = refs.planePreview.querySelector(".plane-wing.left");
   const rightWing = refs.planePreview.querySelector(".plane-wing.right");
@@ -389,8 +380,8 @@ function renderPlanePreview() {
   body.style.transform = `translateX(-50%) rotate(${12 + nose / 9}deg) scaleY(${0.9 + nose / 260})`;
   leftWing.style.width = `${66 + wing}px`;
   rightWing.style.width = `${66 + wing}px`;
-  leftWing.style.transform = `translateX(calc(-100% - ${(100 - symmetry) / 5}px)) rotate(${-8 - tail / 9}deg)`;
-  rightWing.style.transform = `translateX(${(100 - symmetry) / 5}px) rotate(${8 + tail / 9}deg)`;
+  leftWing.style.transform = `translateX(-100%) rotate(${-8 - tail / 9}deg)`;
+  rightWing.style.transform = `rotate(${8 + tail / 9}deg)`;
   tailWing.style.top = `${98 - tail / 6}px`;
 }
 
@@ -548,7 +539,6 @@ function startSimulation() {
   const riskFactor = stats.risk / 100;
   const noseBias = state.parameters.nose / 100;
   const tailBias = state.parameters.tail / 100;
-  const symmetryBias = state.parameters.symmetry / 100;
 
   state.sim.running = true;
   state.sim.points = [];
@@ -561,7 +551,7 @@ function startSimulation() {
   };
   state.sim.maxDistance = 0;
   state.sim.maxHeight = 0;
-  state.sim.turbulence = (1.16 - launchStability) * 0.42 + (1 - symmetryBias) * 0.22 + Math.random() * 0.12;
+  state.sim.turbulence = (1.16 - launchStability) * 0.42 + Math.abs(0.54 - stats.lift / 100) * 0.18 + Math.random() * 0.12;
   state.sim.windText = "平稳";
   state.sim.startTime = performance.now();
   state.sim.lastTime = performance.now();
@@ -584,7 +574,7 @@ function startSimulation() {
     jet.vx += (0.15 - drag * jet.vx * 0.012 - Math.max(0, riskFactor - 0.62) * 0.12) * deltaSeconds * 60 * SIMULATION_SPEED;
     jet.vy += (gravity - liftBoost - gust * 10) * deltaSeconds * SIMULATION_SPEED;
     jet.vx += turbulence * deltaSeconds * 26 * SIMULATION_SPEED;
-    jet.vy += (Math.max(0, riskFactor - 0.58) * 18 - symmetryBias * 4) * deltaSeconds * SIMULATION_SPEED;
+    jet.vy += (Math.max(0, riskFactor - 0.58) * 18 - stats.stability / 38) * deltaSeconds * SIMULATION_SPEED;
 
     if (elapsed > 0.6 && tailBias > 0.68) {
       jet.vy += (tailBias - 0.68) * 36 * deltaSeconds * SIMULATION_SPEED;
@@ -676,8 +666,7 @@ function buildResultSummary(distance, reasons) {
   if (distance > lead) return "新纪录诞生，这一投已经超过当前总榜榜首。";
   if (distance > best) return `刷新个人最佳，距离榜首还差 ${(lead - distance).toFixed(1)} m。`;
   if (reasons.includes("失速明显")) return "这架飞机前段抬头不错，但尾翼过高导致中段失速。";
-  if (reasons.includes("偏航损失")) return "对称度略差，飞机在中段出现了明显偏航。";
-  if (reasons.includes("过度对称")) return "机体过于追求满对称，飞得很稳，但滑翔上限被压住了。";
+  if (reasons.includes("机体抖动")) return "这次出手稳定度一般，飞机在中段出现了明显抖动。";
   return "这把已经有不错雏形，再优化参数或释放时机还有明显提升空间。";
 }
 
@@ -686,8 +675,7 @@ function getRunReasons(distance, launchStability, releaseFactor) {
   if (distance >= 110) reasons.push("极限滑翔");
   if (state.parameters.tail > 72) reasons.push("失速明显");
   if (state.parameters.nose > 78 && state.parameters.tail < 42) reasons.push("前段俯冲");
-  if (state.parameters.symmetry < 56 || launchStability < 0.62) reasons.push("偏航损失");
-  if (state.parameters.symmetry > 90) reasons.push("过度对称");
+  if (launchStability < 0.62 || state.stats.stability < 44) reasons.push("机体抖动");
   if (releaseFactor > 0.84) reasons.push("释放稳");
   if (state.stats.stability > 72) reasons.push("机体稳定");
   if (state.stats.lift > 78) reasons.push("滑翔表现强");
@@ -701,7 +689,7 @@ function renderResultSummary(entry) {
     refs.resultTags.innerHTML = [
       "头更尖，飞得更快",
       "翼更宽，飞得更久",
-      "更对称，更稳定",
+      "尾翼决定抬头与下坠",
       "释放时机越准越稳",
     ]
       .map((tag) => `<span class="result-tag">${tag}</span>`)
