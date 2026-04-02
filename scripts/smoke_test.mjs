@@ -80,8 +80,10 @@ try {
   await page.mouse.move(box.x + box.width / 2, box.y + 42, { steps: 12 });
   const angleText = await page.locator("#angleReadout").textContent();
   await page.mouse.up();
-
-  await page.waitForTimeout(2600);
+  await page.waitForFunction(() => {
+    const text = document.querySelector("#resultDistance")?.textContent ?? "";
+    return text !== "0.0 m";
+  }, null, { timeout: 20000 });
 
   const resultDistanceText = await page.locator("#resultDistance").textContent();
   const resultDistance = Number.parseFloat(resultDistanceText ?? "0");
