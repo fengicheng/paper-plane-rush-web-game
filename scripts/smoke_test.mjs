@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import { chromium } from "playwright";
 
 const rootDir = process.cwd();
+const targetUrl = process.env.TARGET_URL?.trim() || "";
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
   ".css": "text/css; charset=utf-8",
@@ -12,25 +13,29 @@ const mimeTypes = {
   ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 };
 
-const server = http.createServer(async (req, res) => {
-  const urlPath = req.url === "/" ? "/index.html" : decodeURIComponent(req.url || "/index.html");
-  const filePath = path.join(rootDir, urlPath.replace(/^\/+/, ""));
+const server = targetUrl
+  ? null
+  : http.createServer(async (req, res) => {
+      const urlPath = req.url === "/" ? "/index.html" : decodeURIComponent(req.url || "/index.html");
+      const filePath = path.join(rootDir, urlPath.replace(/^\/+/, ""));
 
-  try {
-    const content = await fs.readFile(filePath);
-    const ext = path.extname(filePath);
-    res.writeHead(200, {
-      "content-type": mimeTypes[ext] || "application/octet-stream",
-      "cache-control": "no-store",
+      try {
+        const content = await fs.readFile(filePath);
+        const ext = path.extname(filePath);
+        res.writeHead(200, {
+          "content-type": mimeTypes[ext] || "application/octet-stream",
+          "cache-control": "no-store",
+        });
+        res.end(content);
+      } catch {
+        res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+        res.end("Not found");
+      }
     });
-    res.end(content);
-  } catch {
-    res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-    res.end("Not found");
-  }
-});
 
-await new Promise((resolve) => server.listen(4173, "127.0.0.1", resolve));
+if (server) {
+  await new Promise((resolve) => server.listen(4173, "127.0.0.1", resolve));
+}
 
 const browser = await chromium.launch({ headless: true });
 
@@ -42,7 +47,8 @@ try {
     pageErrors.push(error.message);
   });
 
-  await page.goto("http://127.0.0.1:4173");
+  const url = targetUrl || "http://127.0.0.1:4173";
+  await page.goto(url);
   await page.waitForSelector("#paperOptions .paper-option");
   await page.waitForSelector("#parameterControls input[type='range']");
 
@@ -89,7 +95,7 @@ try {
   console.log(
     JSON.stringify(
       {
-        url: "http://127.0.0.1:4173",
+        url,
         paperCount,
         sliderCount,
         resultDistance,
@@ -100,5 +106,7 @@ try {
   );
 } finally {
   await browser.close();
-  await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  if (server) {
+    await new Promise((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+  }
 }
